@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -22,9 +23,8 @@ import static org.mockito.Mockito.when;
 
 public class LoaderTest {
 
-    @Test
-    public void test() throws IOException {
-
+    @Before
+    public void init() {
         Gdx.app = mock(Application.class);
         doAnswer(new Answer<Void>() {
             @Override
@@ -33,31 +33,42 @@ public class LoaderTest {
                 return null;
             }
         }).when(Gdx.app).log(anyString(), anyString());
+    }
 
-        Files files = mock(Files.class, RETURNS_DEEP_STUBS);
-        byte[] fakeElevData = new byte[]{
-                9, 19, 29, 39, 49, 59, 69, 79, 89, 99,
-                8, 18, 28, 38, 48, 58, 68, 78, 88, 98,
-                7, 17, 27, 37, 47, 57, 67, 77, 87, 97,
-                6, 16, 26, 36, 46, 56, 66, 76, 86, 96,
-                5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                4, 14, 24, 34, 44, 54, 64, 74, 84, 94,
-                3, 13, 23, 33, 43, 53, 63, 73, 83, 93,
-                2, 12, 22, 32, 42, 52, 62, 72, 82, 92,
-                1, 11, 21, 31, 41, 51, 61, 71, 81, 91,
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        };
-        when(files.internal(anyString()).read(anyInt())).thenReturn(
-                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
-                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
-                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
-                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)));
+//    @Test
+//    public void test() throws IOException {
+//
+//        Files files = mock(Files.class, RETURNS_DEEP_STUBS);
+//        byte[] fakeElevData = new byte[]{
+//                9, 19, 29, 39, 49, 59, 69, 79, 89, 99,
+//                8, 18, 28, 38, 48, 58, 68, 78, 88, 98,
+//                7, 17, 27, 37, 47, 57, 67, 77, 87, 97,
+//                6, 16, 26, 36, 46, 56, 66, 76, 86, 96,
+//                5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+//                4, 14, 24, 34, 44, 54, 64, 74, 84, 94,
+//                3, 13, 23, 33, 43, 53, 63, 73, 83, 93,
+//                2, 12, 22, 32, 42, 52, 62, 72, 82, 92,
+//                1, 11, 21, 31, 41, 51, 61, 71, 81, 91,
+//                0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+//        };
+//        when(files.internal(anyString()).read(anyInt())).thenReturn(
+//                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
+//                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
+//                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)),
+//                new BufferedInputStream(new ByteArrayInputStream(fakeElevData)));
+//
+//        Loader sut = new Loader(files, 1, 1, 10, 10);
+//        Array<Vector3> land = sut.loadLandscape(new Rectangle(0.9f, 0.8f, 0.4f, 0.5f));
+//
+//        System.out.println(land);
+//        System.out.println(land.size);
+//    }
 
-        Loader sut = new Loader(files, 1, 1, 10, 10);
-        Array<Vector3> land = sut.loadLandscape(new Rectangle(0.9f, 0.8f, 0.4f, 0.5f));
+    @Test
+    public void test2() {
 
-        System.out.println(land);
-        System.out.println(land.size);
+//        Loader l = new Loader(null, 3, 3, 3600, 3600);
+//        System.out.println(l.requiredChunks(new Rectangle(2.5f, 2.5f, 1, 1)));
     }
 
 }

@@ -1,17 +1,17 @@
 package com.mygdx.game.model.colorization;
 
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.Color;
 
 public class SolidColorModel implements ColorModel {
 
-    private final Vector3 color;
+    private final Color color;
 
-    public SolidColorModel(Vector3 color) {
+    public SolidColorModel(Color color) {
         this.color = color;
     }
 
     @Override
-    public Vector3 color(Vector3 vertex) {
+    public Color color(float x, float y, float z) {
         return this.color;
     }
 }

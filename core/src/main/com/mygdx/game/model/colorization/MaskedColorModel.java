@@ -1,6 +1,6 @@
 package com.mygdx.game.model.colorization;
 
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.Color;
 
 public class MaskedColorModel implements ColorModel {
 
@@ -15,15 +15,16 @@ public class MaskedColorModel implements ColorModel {
     }
 
     @Override
-    public Vector3 color(Vector3 vertex) {
-        float w = this.weight.weight(vertex.x, vertex.z );
+    public Color color(float x, float y, float z) {
+        float w = this.weight.weight(x, z);
         float wi = 1 - w;
-        Vector3 b = this.base.color(vertex);
-        Vector3 m = this.mask.color(vertex);
-        return new Vector3(
-                w * b.x + wi * m.x,
-                w * b.y + wi * m.y,
-                w * b.z + wi * m.z);
+        Color b = this.base.color(x,y,z);
+        Color m = this.mask.color(x,y,z);
+        return new Color(
+                w * b.r + wi * m.r,
+                w * b.g + wi * m.g,
+                w * b.b + wi * m.b,
+                1.0f);
     }
 
     public interface Weight{

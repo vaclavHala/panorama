@@ -1,6 +1,7 @@
 package com.mygdx.game.model;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.DelaunayTriangulator;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -144,14 +145,14 @@ public class Convertor {
 //        return new SolidColorModel();
         return new MaskedColorModel(
                 new HeightColorModel(0.0f, .95f),
-                new SolidColorModel(new Vector3(0, 0, 0)),
+                new SolidColorModel(Color.BLACK),
                 new CenterDistanceWeight(45.0f, 55.0f, new Vector2(0, 0)));
     }
 
     private void appendVertex(FloatArray to, Vector3 vertex, ColorModel colors) {
-        to.addAll(vertex.x, vertex.y, vertex.z);
-        Vector3 color = colors.color(vertex);
-        to.addAll(color.x, color.y, color.z, 1.0f);
+//        to.addAll(vertex.x, vertex.y, vertex.z);
+//        Vector3 color = colors.color(vertex);
+//        to.addAll(color.x, color.y, color.z, 1.0f);
     }
 
     public void makeElevation() {

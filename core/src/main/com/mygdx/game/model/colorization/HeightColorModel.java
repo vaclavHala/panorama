@@ -1,6 +1,6 @@
 package com.mygdx.game.model.colorization;
 
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.Color;
 
 public class HeightColorModel implements ColorModel {
 
@@ -15,12 +15,12 @@ public class HeightColorModel implements ColorModel {
     }
 
     @Override
-    public Vector3 color(Vector3 vertex) {
-        return vertex.y < this.minHeight ? new Vector3(0, 0, 0) :
-                (vertex.y > this.maxHeight ? new Vector3(1, 1, 1) :
-                        new Vector3(
-                                (vertex.y - minHeight) / this.range,
-                                (vertex.y - minHeight) / this.range,
-                                (vertex.y - minHeight) / this.range));
+    public Color color(float x, float y, float z) {
+        if (y < this.minHeight)
+            return Color.BLACK;
+        if (y > this.maxHeight)
+            return Color.WHITE;
+        float c = (y - minHeight) / range;
+        return new Color(c, c, c, 1.0f);
     }
 }
