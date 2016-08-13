@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,10 +18,13 @@ import com.badlogic.gdx.graphics.g3d.environment.SpotLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -28,6 +32,7 @@ import com.mygdx.game.model.Convertor;
 import com.mygdx.game.model.InMemoryFileHandle;
 import com.mygdx.game.model.LandscapeLoader;
 import com.mygdx.game.model.Loader;
+import com.mygdx.game.ui.UI;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,21 +45,23 @@ public class MyGdxGame extends ApplicationAdapter {
 
     Array<ModelInstance> instances = new Array<ModelInstance>();
     ModelBatch modelBatch;
-//    Environment environment;
-    //     AssetManager assets;
-    boolean loading;
+    UI ui;
+
 
     @Override
     public void create() {
         modelBatch = new ModelBatch();
         cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(1, 1, 1);
+        cam.position.set(0, 0, 0);
         cam.lookAt(0, 0, 0);
         cam.near = .1f;
         cam.far = 25000f;
         cam.update();
         control = new CameraInputController(cam);
-        Gdx.input.setInputProcessor(control);
+
+        ui = new UI(Gdx.files);
+        ui.create();
+
 
 //        environment = new Environment();
 //        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -66,6 +73,7 @@ public class MyGdxGame extends ApplicationAdapter {
         Gdx.app.log("MAIN", elevCfg.toString());
 
         LandscapeLoader loader = new LandscapeLoader(elevCfg);
+
 
 //        try {
 //            landscape = loader.loadLandscape(new Rectangle(14.3f, 48.8f, .1f, .1f));
@@ -131,6 +139,10 @@ public class MyGdxGame extends ApplicationAdapter {
 //        landscapeInstance.transform = new Matrix4(Vector3.Zero, new Quaternion(), new Vector3(1,.1f,1));
         instances.add(landscapeInstance);
 
+
+        InputMultiplexer inMux = new InputMultiplexer(ui.input(), control);
+        Gdx.input.setInputProcessor(inMux);
+
 //        assets = new AssetManager();
 //        assets.load("gen.g3dj", Model.class);
 //        loading = true;
@@ -141,7 +153,16 @@ public class MyGdxGame extends ApplicationAdapter {
 //        ModelInstance shipInstance = new ModelInstance(ship);
 //        instances.add(shipInstance);
 //        loading = false;
+
+
 //    }
+
+
+    @Override
+    public void resize(int width, int height) {
+        ui.resize(width, height);
+        super.resize(width, height);
+    }
 
     @Override
     public void render() {
@@ -153,12 +174,20 @@ public class MyGdxGame extends ApplicationAdapter {
         modelBatch.begin(cam);
         modelBatch.render(this.instances);
         modelBatch.end();
+
+//        System.out.format("x:%f y:%f z:%f\n",cam.direction.x, cam.direction.y, cam.direction.z);
+
+        Vector2 projectedToGround = new Vector2(cam.direction.x, cam.direction.z);
+        double camRot = - projectedToGround.angleRad(Vector2.X)* MathUtils.radiansToDegrees + 90;
+
+        ui.render(Gdx.graphics.getDeltaTime(), camRot);
     }
 
     @Override
     public void dispose() {
         instances.clear();
         modelBatch.dispose();
+        ui.dispose();
 //        assets.dispose();
     }
 }

@@ -1,0 +1,117 @@
+compas2.png
+size: 256,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+N
+  rotate: false
+  xy: 0, 0
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+NNE
+  rotate: false
+  xy: 85, 0
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+NE
+  rotate: false
+  xy: 170, 0
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+ENE
+  rotate: false
+  xy: 0, 42
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+E
+  rotate: false
+  xy: 85, 42
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+ESE
+  rotate: false
+  xy: 170, 42
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+SE
+  rotate: false
+  xy: 0, 84
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+SSE
+  rotate: false
+  xy: 85, 84
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+S
+  rotate: false
+  xy: 170, 84
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+SSW
+  rotate: false
+  xy: 0, 126
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+SW
+  rotate: false
+  xy: 85, 126
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+WSW
+  rotate: false
+  xy: 170, 126
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+W
+  rotate: false
+  xy: 0, 168
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+WNW
+  rotate: false
+  xy: 85, 168
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+NW
+  rotate: false
+  xy: 170, 168
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
+NNW
+  rotate: false
+  xy: 0, 210
+  size: 85, 42
+  orig: 85, 42
+  offset: 0, 0
+  index: -1
