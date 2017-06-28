@@ -77,14 +77,14 @@ public class LandscapeLoader {
         double lon0 = lon - TOTAL_WIDTH_DEG / 2;
         double lat0 = lat - TOTAL_HEIGHT_DEG / 2;
         Gdx.app.log(TAG, "Loading landscape. Deg:" +
-                " lon0=" + lon0 + ", lat0=" + lat0 +
-                ", width=" + TOTAL_WIDTH_DEG + ", height=" + TOTAL_HEIGHT_DEG);
+                         " lon0=" + lon0 + ", lat0=" + lat0 +
+                         ", width=" + TOTAL_WIDTH_DEG + ", height=" + TOTAL_HEIGHT_DEG);
         Loader loader = new Loader(elevCfg, Gdx.files);
         try {
             Landscape landscape = loader.loadLandscape(
-                    elevCfg.lonToCell(lon0), elevCfg.latToCell(lat0),
-                    elevCfg.lonToCell(TOTAL_WIDTH_DEG), elevCfg.latToCell(TOTAL_HEIGHT_DEG));
-//
+                                                       elevCfg.lonToCell(lon0), elevCfg.latToCell(lat0),
+                                                       elevCfg.lonToCell(TOTAL_WIDTH_DEG), elevCfg.latToCell(TOTAL_HEIGHT_DEG));
+            //
             ModelData model = new ModelData();
             model.version[0] = 0;
             model.version[1] = 1;
@@ -94,7 +94,6 @@ public class LandscapeLoader {
             addMesh(model, landscape);
             addMaterial(model);
             addNode(model);
-
 
             return model;
         } catch (IOException e) {
@@ -111,45 +110,44 @@ public class LandscapeLoader {
      *
      * @return String representation of the generated moedel in G3DJ format
      */
-//    public ModelData pointsToLandscape(Landscape landscape) {
-//
-////        Gdx.app.log(TAG, "Creating landscape model. points.size=" + points.size);
-//
-//        Gdx.app.log(TAG, "Coloring terrain.");
+    //    public ModelData pointsToLandscape(Landscape landscape) {
+    //
+    ////        Gdx.app.log(TAG, "Creating landscape model. points.size=" + points.size);
+    //
+    //        Gdx.app.log(TAG, "Coloring terrain.");
 
-
-//        G3DJTemplate model = new G3DJTemplate();
-//        model.version = VERSION;
-//        model.id = MODEL_ID;
-//
-//        G3DJTemplate.G3DJMesh mesh = new G3DJTemplate.G3DJMesh();
-//        mesh.attributes = asList(POSITION, COLOR);
-//        mesh.vertices = coloredVertices.toArray();
-////                asList(
-////                0f, 0f, 0f, 1f, 0f, 0f, 1f,
-////                0f, 0f, 1f, 0f, 0f, 1f, 1f,
-////                1f, 0f, 1f, 0f, 1f, 0f, 1f,
-////                1f, 0f, 0f, 0f, 1f, 0f, 1f
-////        );
-//
-//        G3DJTemplate.G3DJPart part = new G3DJTemplate.G3DJPart();
-//        part.id = PART_ID;
-//        part.type = TRIANGLES;
-//        part.indices = triangles.toArray();
-////                new int[]{
-////                0, 2, 3
-////        };
-//
-//        mesh.parts = asList(part);
-//        model.meshes = asList(mesh);
-//
-//        model.materials = asList(MATERIAL);
-//        model.nodes = asList(NODE);
-//        model.animations = asList(ANIMATION);
-//
-//        Gdx.app.log(TAG, "Model ready, writing to JSON.");
-//        return json.toJson(model);
-//    }
+    //        G3DJTemplate model = new G3DJTemplate();
+    //        model.version = VERSION;
+    //        model.id = MODEL_ID;
+    //
+    //        G3DJTemplate.G3DJMesh mesh = new G3DJTemplate.G3DJMesh();
+    //        mesh.attributes = asList(POSITION, COLOR);
+    //        mesh.vertices = coloredVertices.toArray();
+    ////                asList(
+    ////                0f, 0f, 0f, 1f, 0f, 0f, 1f,
+    ////                0f, 0f, 1f, 0f, 0f, 1f, 1f,
+    ////                1f, 0f, 1f, 0f, 1f, 0f, 1f,
+    ////                1f, 0f, 0f, 0f, 1f, 0f, 1f
+    ////        );
+    //
+    //        G3DJTemplate.G3DJPart part = new G3DJTemplate.G3DJPart();
+    //        part.id = PART_ID;
+    //        part.type = TRIANGLES;
+    //        part.indices = triangles.toArray();
+    ////                new int[]{
+    ////                0, 2, 3
+    ////        };
+    //
+    //        mesh.parts = asList(part);
+    //        model.meshes = asList(mesh);
+    //
+    //        model.materials = asList(MATERIAL);
+    //        model.nodes = asList(NODE);
+    //        model.animations = asList(ANIMATION);
+    //
+    //        Gdx.app.log(TAG, "Model ready, writing to JSON.");
+    //        return json.toJson(model);
+    //    }
     private void colorize(Landscape input, float centerX, float centerY, ElevConfig elevCfg) {
         float minHeight = Float.MAX_VALUE;
         float maxHeight = Float.MIN_VALUE;
@@ -164,11 +162,11 @@ public class LandscapeLoader {
         float heightDeg = input.heightCells / (float) elevCfg.cellsPerDegVertical;
         float radius = Math.min(widthDeg, heightDeg) / 2.0f;
 
-//        ColorModel colors = new MaskedColorModel(
-//                new HeightColorModel(0.9f * minHeight, 0.9f * maxHeight),
-//                new SolidColorModel(Color.BLACK),
-//                new CenterDistanceWeight(0.3f * radius, 0.9f * radius,
-//                        new Vector2(centerX, centerY)));
+        //        ColorModel colors = new MaskedColorModel(
+        //                new HeightColorModel(0.9f * minHeight, 0.9f * maxHeight),
+        //                new SolidColorModel(Color.BLACK),
+        //                new CenterDistanceWeight(0.3f * radius, 0.9f * radius,
+        //                        new Vector2(centerX, centerY)));
         ColorModel colors = new SolidColorModel(Color.RED);
         // has to be in separate loop from the one above,
         // we first need to go through all points to find min/max heights
@@ -186,8 +184,8 @@ public class LandscapeLoader {
         //mesh.id = PART_ID;
 
         mesh.attributes = new VertexAttribute[]{
-                VertexAttribute.Position(),
-                VertexAttribute.ColorPacked()
+                                                VertexAttribute.Position(),
+                                                VertexAttribute.ColorPacked()
         };
 
         mesh.vertices = landscape.cells;
@@ -204,7 +202,7 @@ public class LandscapeLoader {
         // * 2 because there are two tris per square
         int triCount = (landscape.widthCells - 1) * (landscape.heightCells - 1) * 2;
         Gdx.app.log(TAG, "landscape width=" + landscape.widthCells + ", height=" + landscape.heightCells +
-                " will have tricount=" + triCount);
+                         " will have tricount=" + triCount);
         // * 3 because 3 indices per triangle
         short[] indices = new short[triCount * 3];
         int i = 0;

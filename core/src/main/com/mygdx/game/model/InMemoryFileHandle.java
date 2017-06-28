@@ -12,7 +12,7 @@ public class InMemoryFileHandle extends FileHandle {
 
     private final String data;
 
-    public InMemoryFileHandle(final String data){
+    public InMemoryFileHandle(final String data) {
         super();
         this.data = data;
     }

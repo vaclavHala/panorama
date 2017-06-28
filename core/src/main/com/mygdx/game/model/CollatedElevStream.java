@@ -42,15 +42,15 @@ public class CollatedElevStream {
                 Chunk chunk = requiredChunks[row][col];
                 try {
                     ins[row][col] = new DataInputStream(/*new GZIPInputStream(*/files.internal(chunk.filename()).read(BUFFER_SIZE));
-                } catch (GdxRuntimeException e){
+                } catch (GdxRuntimeException e) {
                     throw new IOException(e);
                 }
             }
         }
 
-//        cycler = new ChunkFileCycler<DataInputStream>(ins,
-//                chunkWidthCells, chunkHeightCells,
-//                chunksCounts[0], chunksCounts[1]);
+        //        cycler = new ChunkFileCycler<DataInputStream>(ins,
+        //                chunkWidthCells, chunkHeightCells,
+        //                chunksCounts[0], chunksCounts[1]);
 
         this.at = 0;
     }
@@ -78,9 +78,11 @@ public class CollatedElevStream {
     }
 
     public void skip(int count) throws IOException {
-        if (count == 0) return;
-        if (count < 0) throw new IllegalStateException("count=" + count);
-//        //each short is two bytes
+        if (count == 0)
+            return;
+        if (count < 0)
+            throw new IllegalStateException("count=" + count);
+        //        //each short is two bytes
         int globLeft = count;
         while (globLeft > 0) {
             int locLeft = Math.min(globLeft, leftBeforeSwap());
@@ -127,8 +129,8 @@ public class CollatedElevStream {
         this.chunksHorizontal = (chunkNLon - chunk0Lon) / elevCfg.chunkWidthCells + 1;
         this.chunksVertical = (chunkNLat - chunk0Lat) / elevCfg.chunkHeightCells + 1;
         Gdx.app.log(TAG, "chunks" +
-                " lon0=" + chunk0Lon + ", lat0=" + chunk0Lat +
-                ", horizontal=" + chunksHorizontal + ", vertical=" + chunksVertical);
+                         " lon0=" + chunk0Lon + ", lat0=" + chunk0Lat +
+                         ", horizontal=" + chunksHorizontal + ", vertical=" + chunksVertical);
         Chunk[][] chunks = new Chunk[chunksVertical][chunksHorizontal];
 
         List<Chunk> requiredChunksLog = new ArrayList<Chunk>();
@@ -138,7 +140,7 @@ public class CollatedElevStream {
                 int lat = chunk0Lat + y * elevCfg.chunkHeightCells;
                 Chunk c = new Chunk(lon, lat);
                 //chunk with lowest lat has to be in lowermost row
-                chunks[chunksVertical-y-1][x] = c;
+                chunks[chunksVertical - y - 1][x] = c;
                 requiredChunksLog.add(c);
             }
         }
@@ -194,9 +196,9 @@ public class CollatedElevStream {
         @Override
         public String toString() {
             return "Chunk{" +
-                    "lon=" + lon0Cells +
-                    ", lat=" + lat0Cells +
-                    '}';
+                   "lon=" + lon0Cells +
+                   ", lat=" + lat0Cells +
+                   '}';
         }
     }
 

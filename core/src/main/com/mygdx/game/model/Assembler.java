@@ -7,8 +7,8 @@ public class Assembler {
     /**
      * Transforms all parts to have center in the right place
      */
-//    public void make(Vector2 center, Array<String> features){
-//
-//    }
+    //    public void make(Vector2 center, Array<String> features){
+    //
+    //    }
 
 }

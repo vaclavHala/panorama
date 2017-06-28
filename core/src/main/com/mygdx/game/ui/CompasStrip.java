@@ -15,16 +15,16 @@ public class CompasStrip extends Table {
         this.shiftPerDegPix = Gdx.graphics.getWidth() / fov;
 
         String[] glyphNames = {
-                "N", "NNE", "NE", "ENE",
-                "E", "ESE", "SE", "SSE",
-                "S", "SSW", "SW", "WSW",
-                "W", "WNW", "NW", "NNW"
+                               "N", "NNE", "NE", "ENE",
+                               "E", "ESE", "SE", "SSE",
+                               "S", "SSW", "SW", "WSW",
+                               "W", "WNW", "NW", "NNW"
         };
         this.glyphs = new GlyphWithOffset[glyphNames.length];
         double degsPerGlyph = 360.0 / glyphNames.length;
         for (int i = 0; i < glyphNames.length; i++) {
             glyphs[i] = new GlyphWithOffset(new Image(skin.findRegion(glyphNames[i])), i * degsPerGlyph);
-            add(glyphs[i].glyph).width(glyphSize*2).height(glyphSize);
+            add(glyphs[i].glyph).width(glyphSize * 2).height(glyphSize);
         }
     }
 

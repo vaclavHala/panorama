@@ -23,13 +23,14 @@ public class Tweaker extends Table {
         Slider slider = new Slider(min, max, step, false, sliderStyle);
         slider.addListener(new TweakerListener(name, label, action));
 
-        label.setText(name+": "+slider.getVisualValue());
+        label.setText(name + ": " + slider.getVisualValue());
 
         add(slider).width(300).row();
         add(label).left();
     }
 
     public interface TweakerAction {
+
         void react(float newValue);
     }
 

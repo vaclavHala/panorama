@@ -18,20 +18,19 @@ public class Loader {
     public Loader(ElevConfig elevCfg, Files files) {
         this.elevCfg = elevCfg;
         this.files = files;
-//        this.chunkWidthDeg = chunkWidthDeg;
-//        this.chunkHeightDeg = chunkHeightDeg;
-//        this.dataWidthCells = dataWidthCells;
-//        this.dataHeightCells = dataHeightCells;
-//        this.cellWidthDeg = chunkWidthDeg / dataWidthCells;
-//        this.cellHeightDeg = chunkHeightDeg / dataHeightCells;
-//        Gdx.app.log(TAG, format("chunkWidthDeg=%f, chunkHeightDeg=%f, " +
-//                        "dataWidthCells=%d, dataHeightCells=%d, " +
-//                        "cellWidthDeg=%f, cellHeightDeg=%f",
-//                this.chunkWidthDeg, this.chunkHeightDeg,
-//                this.dataWidthCells, this.dataHeightCells,
-//                this.cellWidthDeg, this.cellHeightDeg));
+        //        this.chunkWidthDeg = chunkWidthDeg;
+        //        this.chunkHeightDeg = chunkHeightDeg;
+        //        this.dataWidthCells = dataWidthCells;
+        //        this.dataHeightCells = dataHeightCells;
+        //        this.cellWidthDeg = chunkWidthDeg / dataWidthCells;
+        //        this.cellHeightDeg = chunkHeightDeg / dataHeightCells;
+        //        Gdx.app.log(TAG, format("chunkWidthDeg=%f, chunkHeightDeg=%f, " +
+        //                        "dataWidthCells=%d, dataHeightCells=%d, " +
+        //                        "cellWidthDeg=%f, cellHeightDeg=%f",
+        //                this.chunkWidthDeg, this.chunkHeightDeg,
+        //                this.dataWidthCells, this.dataHeightCells,
+        //                this.cellWidthDeg, this.cellHeightDeg));
     }
-
 
     /**
      * We dont want data from the whole file, just rectangle within the bounding box.
@@ -46,8 +45,8 @@ public class Loader {
     public Landscape loadLandscape(int lon0, int lat0, int width, int height) throws IOException {
 
         Gdx.app.log(TAG, "Loading landscape. Cell:" +
-                " lon0_cells=" + lon0 + ", lat0_cells=" + lat0 +
-                ", width_cells=" + width + ", height_cells=" + height);
+                         " lon0_cells=" + lon0 + ", lat0_cells=" + lat0 +
+                         ", width_cells=" + width + ", height_cells=" + height);
 
         CollatedElevStream elevStream = new CollatedElevStream(files, elevCfg, lon0, lat0, width, height);
 
@@ -58,14 +57,14 @@ public class Loader {
         int upperSkip = (elevStream.chunk0Lat() + dataHeightCells - (lat0 + height)) * dataWidthCells;
         int leftSkip = lon0 - elevStream.chunk0Lon();
         int rightSkip = dataWidthCells - leftSkip - width;
-//        int upperSkip = (int) (elevStream.lat0() / elevStream.cellHeightDeg() + elevStream.dataHeightCells() - (boundingBox.y + boundingBox.height) / elevStream.cellHeightDeg());
-//        int leftSkip = (int) ((boundingBox.x - elevStream.lon0()) / elevStream.cellWidthDeg());
-//        int rightSkip = (elevStream.dataWidthCells() - leftSkip - bbWidthCells);
+        //        int upperSkip = (int) (elevStream.lat0() / elevStream.cellHeightDeg() + elevStream.dataHeightCells() - (boundingBox.y + boundingBox.height) / elevStream.cellHeightDeg());
+        //        int leftSkip = (int) ((boundingBox.x - elevStream.lon0()) / elevStream.cellWidthDeg());
+        //        int rightSkip = (elevStream.dataWidthCells() - leftSkip - bbWidthCells);
         if (upperSkip < 0 || leftSkip < 0 || rightSkip < 0)
             throw new IllegalStateException(format("Calculation blew up. " +
-                    "upperSkip=%s, leftSkip=%s, rightSkip=%s", upperSkip, leftSkip, rightSkip));
+                                                   "upperSkip=%s, leftSkip=%s, rightSkip=%s", upperSkip, leftSkip, rightSkip));
         Gdx.app.log(TAG, "dataWidth=" + dataWidthCells + ", dataHeight=" + dataHeightCells +
-                ", upperSkip=" + upperSkip + ", leftSkip=" + leftSkip + ", rightSkip=" + rightSkip);
+                         ", upperSkip=" + upperSkip + ", leftSkip=" + leftSkip + ", rightSkip=" + rightSkip);
 
         elevStream.skip(upperSkip);
 
@@ -92,62 +91,59 @@ public class Loader {
         return landscape;
     }
 
-//    /**
-//     * @param globalBoundingBox original input to Loader, in global coordinates
-//     * @return area of chunk to read ([0,0] is lower left of chunk)
-//     */
-//    private Rectangle chunkBoundingBox(Rectangle globalBoundingBox, Chunk chunk) {
-//        float bbRight = globalBoundingBox.x + globalBoundingBox.width;
-//        float chunkRight = chunk.lon + chunkWidthDeg;
-//        float bbTop = globalBoundingBox.y + globalBoundingBox.height;
-//        float chunkTop = chunk.lat + chunkHeightDeg;
-//
-//        //cropped in global coordinates
-//        Rectangle containedBoundingBox = new Rectangle(
-//                Math.max(globalBoundingBox.x, chunk.lon),
-//                Math.max(globalBoundingBox.y, chunk.lat),
-//                bbRight < chunkRight ?
-//                        (globalBoundingBox.x > chunk.lon ?
-//                                globalBoundingBox.width :
-//                                bbRight - chunk.lon) :
-//                        chunkRight - globalBoundingBox.x,
-//                bbTop < chunkTop ?
-//                        (globalBoundingBox.y > chunk.lat ?
-//                                globalBoundingBox.height :
-//                                bbTop - chunk.lat) :
-//                        chunkTop - globalBoundingBox.y
-//        );
-//
-//        //same area as containedBoundingBox but in coordinates relative to the chunk
-//        // ([0,0] is lower left corner of the chunk)
-//        Rectangle normalizedContainerBoundingBox = new Rectangle(
-//                containedBoundingBox.x - chunk.lon,
-//                containedBoundingBox.y - chunk.lat,
-//                containedBoundingBox.width,
-//                containedBoundingBox.height
-//        );
-//
-//        Gdx.app.log(TAG, format("chunk=%s, boundingBoxCropped=%s, boundingBoxNormalized=%s",
-//                chunk, containedBoundingBox, normalizedContainerBoundingBox));
-//
-//        return normalizedContainerBoundingBox;
-//    }
+    //    /**
+    //     * @param globalBoundingBox original input to Loader, in global coordinates
+    //     * @return area of chunk to read ([0,0] is lower left of chunk)
+    //     */
+    //    private Rectangle chunkBoundingBox(Rectangle globalBoundingBox, Chunk chunk) {
+    //        float bbRight = globalBoundingBox.x + globalBoundingBox.width;
+    //        float chunkRight = chunk.lon + chunkWidthDeg;
+    //        float bbTop = globalBoundingBox.y + globalBoundingBox.height;
+    //        float chunkTop = chunk.lat + chunkHeightDeg;
+    //
+    //        //cropped in global coordinates
+    //        Rectangle containedBoundingBox = new Rectangle(
+    //                Math.max(globalBoundingBox.x, chunk.lon),
+    //                Math.max(globalBoundingBox.y, chunk.lat),
+    //                bbRight < chunkRight ?
+    //                        (globalBoundingBox.x > chunk.lon ?
+    //                                globalBoundingBox.width :
+    //                                bbRight - chunk.lon) :
+    //                        chunkRight - globalBoundingBox.x,
+    //                bbTop < chunkTop ?
+    //                        (globalBoundingBox.y > chunk.lat ?
+    //                                globalBoundingBox.height :
+    //                                bbTop - chunk.lat) :
+    //                        chunkTop - globalBoundingBox.y
+    //        );
+    //
+    //        //same area as containedBoundingBox but in coordinates relative to the chunk
+    //        // ([0,0] is lower left corner of the chunk)
+    //        Rectangle normalizedContainerBoundingBox = new Rectangle(
+    //                containedBoundingBox.x - chunk.lon,
+    //                containedBoundingBox.y - chunk.lat,
+    //                containedBoundingBox.width,
+    //                containedBoundingBox.height
+    //        );
+    //
+    //        Gdx.app.log(TAG, format("chunk=%s, boundingBoxCropped=%s, boundingBoxNormalized=%s",
+    //                chunk, containedBoundingBox, normalizedContainerBoundingBox));
+    //
+    //        return normalizedContainerBoundingBox;
+    //    }
 
-
-//    private Vector3 makeLandscapePoint(Chunk chunk, int lonCell, int latCell, int elev) {
-//        return new Vector3(
-//                chunk.lon + lonCell * cellWidthDeg,
-//                // we are reading chunk top to bottom (physically in file)
-//                // but in global coordinates 0 is at the bottom
-//                // so we reflect vertically here
-//                chunk.lat + (dataHeightCells - (latCell + 1)) * cellHeightDeg,
-//                elev);
-//    }
-
+    //    private Vector3 makeLandscapePoint(Chunk chunk, int lonCell, int latCell, int elev) {
+    //        return new Vector3(
+    //                chunk.lon + lonCell * cellWidthDeg,
+    //                // we are reading chunk top to bottom (physically in file)
+    //                // but in global coordinates 0 is at the bottom
+    //                // so we reflect vertically here
+    //                chunk.lat + (dataHeightCells - (latCell + 1)) * cellHeightDeg,
+    //                elev);
+    //    }
 
     Array<MapFeature> loadFeatures(String type, Vector2 center, float distance) {
         return null;
     }
-
 
 }

@@ -20,10 +20,10 @@ public class CellArea {
     @Override
     public String toString() {
         return "CellArea{" +
-                "width=" + width +
-                ", height=" + height +
-                ", x0=" + x0 +
-                ", y0=" + y0 +
-                '}';
+               "width=" + width +
+               ", height=" + height +
+               ", x0=" + x0 +
+               ", y0=" + y0 +
+               '}';
     }
 }

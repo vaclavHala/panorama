@@ -17,16 +17,16 @@ public class ChunkFileCycler<T> {
     private int at;
 
     public ChunkFileCycler(Array<T> ins,
-                           int inWidth, int inHeight,
-                           int insCountX, int insCountY) {
+            int inWidth, int inHeight,
+            int insCountX, int insCountY) {
         if (ins.size != insCountX * insCountY)
             throw new IllegalArgumentException(
-                    format("ins.size=%d, insCountX=%d, insCountY=%d",
-                            ins.size, insCountX, insCountY));
+                                               format("ins.size=%d, insCountX=%d, insCountY=%d",
+                                                      ins.size, insCountX, insCountY));
         Gdx.app.log(TAG, "inWidth=" + inWidth +
-                "inHeight=" + inHeight +
-                "insCountX=" + insCountX +
-                "insCountY=" + insCountY);
+                         "inHeight=" + inHeight +
+                         "insCountX=" + insCountX +
+                         "insCountY=" + insCountY);
         this.inWidth = inWidth;
         this.insCountX = insCountX;
         this.insWidthTot = insCountX * inWidth;
@@ -53,8 +53,8 @@ public class ChunkFileCycler<T> {
      * Returns how many more times next can be called before
      * next underlying stream will be used
      */
-    public int leftBeforeSwap(){
+    public int leftBeforeSwap() {
         int thisCol = at % insWidthTot;
-        return (thisCol+1) * insWidthTot - at;
+        return (thisCol + 1) * insWidthTot - at;
     }
 }

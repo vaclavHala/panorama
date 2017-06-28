@@ -1,9 +1,7 @@
-
 package com.mygdx.game;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-
 import com.mygdx.game.model.MapFeature;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,7 +28,7 @@ public class Magic {
         this.renderer = renderer;
     }
 
-    public void foo(){
+    public void foo() {
         Vector2 here = this.location.findCurrentLocation();
         List<MapFeature> features = this.featuresFinder.findNear(here);
         List<Vector2> heightField = this.surveyor.fieldFrom(here, features);
@@ -40,11 +38,11 @@ public class Magic {
     }
 
     private List<Vector3> assembleSurface(List<Vector2> xys, List<Float> zs) {
-        if(xys.size() != zs.size())
-            throw new IllegalArgumentException("fiels.size ("+xys.size()+") != heights.size ("+zs.size()+")");
+        if (xys.size() != zs.size())
+            throw new IllegalArgumentException("fiels.size (" + xys.size() + ") != heights.size (" + zs.size() + ")");
         List<Vector3> surface = new ArrayList<Vector3>(xys.size());
         Iterator<Float> z = zs.iterator();
-        for(Vector2 xy: xys){
+        for (Vector2 xy : xys) {
             surface.add(new Vector3(xy.x, xy.y, z.next()));
         }
         return surface;

@@ -1,4 +1,3 @@
-
 package com.mygdx.game.model;
 
 import com.badlogic.gdx.utils.FloatArray;
@@ -16,26 +15,29 @@ public class G3DJTemplate {
     List<G3DJAnimation> animations;
 
     public static class G3DJMesh {
+
         List<G3DJMeshAttribute> attributes;
         float[] vertices;
         List<G3DJPart> parts;
     }
 
-    public enum G3DJMeshAttribute{
-        POSITION,NORMAL,COLOR
+    public enum G3DJMeshAttribute {
+        POSITION, NORMAL, COLOR
     }
 
     public static class G3DJPart {
+
         String id;
         G3DJPartType type;
         short[] indices;
     }
 
-    public enum G3DJPartType{
+    public enum G3DJPartType {
         TRIANGLES
     }
 
     public static class G3DJMaterial {
+
         String id;
         float[] ambient;
         float[] diffuse;
@@ -46,21 +48,23 @@ public class G3DJTemplate {
     }
 
     public static class G3DJNode {
+
         String id;
         List<G3DJNodeChild> children;
     }
 
     public static class G3DJNodeChild {
+
         String id;
         List<G3DJNodeChildPart> parts;
     }
 
     public static class G3DJNodeChildPart {
+
         String meshpartid;
         String materialid;
     }
 
-    public static class G3DJAnimation {
-    }
+    public static class G3DJAnimation {}
 
 }

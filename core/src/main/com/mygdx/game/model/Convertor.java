@@ -102,20 +102,20 @@ public class Convertor {
         G3DJMesh mesh = new G3DJMesh();
         mesh.attributes = asList(POSITION, COLOR);
         mesh.vertices = coloredVertices.toArray();
-//                asList(
-//                0f, 0f, 0f, 1f, 0f, 0f, 1f,
-//                0f, 0f, 1f, 0f, 0f, 1f, 1f,
-//                1f, 0f, 1f, 0f, 1f, 0f, 1f,
-//                1f, 0f, 0f, 0f, 1f, 0f, 1f
-//        );
+        //                asList(
+        //                0f, 0f, 0f, 1f, 0f, 0f, 1f,
+        //                0f, 0f, 1f, 0f, 0f, 1f, 1f,
+        //                1f, 0f, 1f, 0f, 1f, 0f, 1f,
+        //                1f, 0f, 0f, 0f, 1f, 0f, 1f
+        //        );
 
         G3DJPart part = new G3DJPart();
         part.id = PART_ID;
         part.type = TRIANGLES;
         part.indices = triangles.toArray();
-//                new int[]{
-//                0, 2, 3
-//        };
+        //                new int[]{
+        //                0, 2, 3
+        //        };
 
         mesh.parts = asList(part);
         model.meshes = asList(mesh);
@@ -142,17 +142,17 @@ public class Convertor {
     private ColorModel assembleColorModel(Array<Vector3> input) {
         //find center, min max
         //compose color models
-//        return new SolidColorModel();
+        //        return new SolidColorModel();
         return new MaskedColorModel(
-                new HeightColorModel(0.0f, .95f),
-                new SolidColorModel(Color.BLACK),
-                new CenterDistanceWeight(45.0f, 55.0f, new Vector2(0, 0)));
+                                    new HeightColorModel(0.0f, .95f),
+                                    new SolidColorModel(Color.BLACK),
+                                    new CenterDistanceWeight(45.0f, 55.0f, new Vector2(0, 0)));
     }
 
     private void appendVertex(FloatArray to, Vector3 vertex, ColorModel colors) {
-//        to.addAll(vertex.x, vertex.y, vertex.z);
-//        Vector3 color = colors.color(vertex);
-//        to.addAll(color.x, color.y, color.z, 1.0f);
+        //        to.addAll(vertex.x, vertex.y, vertex.z);
+        //        Vector3 color = colors.color(vertex);
+        //        to.addAll(color.x, color.y, color.z, 1.0f);
     }
 
     public void makeElevation() {
@@ -166,6 +166,5 @@ public class Convertor {
     public void makeColors() {
 
     }
-
 
 }

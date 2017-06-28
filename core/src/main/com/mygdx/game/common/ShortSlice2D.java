@@ -24,14 +24,14 @@ public class ShortSlice2D {
     public short get(int x, int y) {
         if (x < 0 || x >= offsetX || y < 0 || y >= offsetY)
             throw new IndexOutOfBoundsException(format("x=%d, y=%d, offsetX=%d, offsetY=%d",
-                    x, y, offsetX, offsetY));
+                                                       x, y, offsetX, offsetY));
         return this.backing[x][y];
     }
 
     public void set(int x, int y, short value) {
         if (x < 0 || x >= offsetX || y < 0 || y >= offsetY)
             throw new IndexOutOfBoundsException(format("x=%d, y=%d, offsetX=%d, offsetY=%d",
-                    x, y, offsetX, offsetY));
+                                                       x, y, offsetX, offsetY));
         this.backing[x][y] = value;
     }
 

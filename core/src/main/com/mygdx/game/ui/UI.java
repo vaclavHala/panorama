@@ -49,6 +49,7 @@ public class UI implements Disposable {
         style.font = skin.getFont("font");
 
         TweakerAction lonTweakerAction = new TweakerAction() {
+
             @Override
             public void react(float newValue) {
 
@@ -57,6 +58,7 @@ public class UI implements Disposable {
         Tweaker lonTweaker = new Tweaker(lonTweakerAction, "LON 1 deg = N world", .5f, 1.5f, .1f, skin);
 
         TweakerAction dirTweakerAction = new TweakerAction() {
+
             @Override
             public void react(float newValue) {
                 compas.update(newValue);
@@ -65,10 +67,10 @@ public class UI implements Disposable {
         Tweaker dirTweaker = new Tweaker(dirTweakerAction, "Cam dir", 0, 360, 1, skin);
 
         //should be updated in resize to be able to test how it works on different screens
-//        layout.add(compas).expandX().height(Gdx.graphics.getHeight() / 10.0f).row();
+        //        layout.add(compas).expandX().height(Gdx.graphics.getHeight() / 10.0f).row();
         float compasSize = Gdx.graphics.getHeight() / 7f;
         compas = new CompasStrip(67, compasSize, new TextureAtlas(files.internal("compas2.atlas")));
-//        compas.update(180);
+        //        compas.update(180);
         layout.add(compas).height(compasSize).expandX().row();
         layout.add(lonTweaker).left().row();
         layout.add(dirTweaker).left().row();
@@ -94,8 +96,8 @@ public class UI implements Disposable {
     @Override
     public void dispose() {
         ui.dispose();
-//        atlas
-//                compas
+        //        atlas
+        //                compas
     }
 
 }

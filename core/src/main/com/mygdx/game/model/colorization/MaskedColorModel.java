@@ -18,16 +18,17 @@ public class MaskedColorModel implements ColorModel {
     public Color color(float x, float y, float z) {
         float w = this.weight.weight(x, z);
         float wi = 1 - w;
-        Color b = this.base.color(x,y,z);
-        Color m = this.mask.color(x,y,z);
+        Color b = this.base.color(x, y, z);
+        Color m = this.mask.color(x, y, z);
         return new Color(
-                w * b.r + wi * m.r,
-                w * b.g + wi * m.g,
-                w * b.b + wi * m.b,
-                1.0f);
+                         w * b.r + wi * m.r,
+                         w * b.g + wi * m.g,
+                         w * b.b + wi * m.b,
+                         1.0f);
     }
 
-    public interface Weight{
+    public interface Weight {
+
         float weight(float x, float y);
     }
 }

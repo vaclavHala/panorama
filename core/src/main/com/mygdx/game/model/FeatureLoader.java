@@ -13,9 +13,8 @@ public class FeatureLoader {
         this.files = files;
     }
 
-    public void loadFeatures(double lon0, double lat0, double width, double height){
+    public void loadFeatures(double lon0, double lat0, double width, double height) {
 
     }
-
 
 }

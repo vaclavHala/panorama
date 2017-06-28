@@ -25,23 +25,23 @@ public class ElevConfig {
         this.cellHeightDeg = 1.0 / cellsPerDegVertical;
     }
 
-    public int lonToCell(double lon){
+    public int lonToCell(double lon) {
         return (int) (lon * cellsPerDegHorizontal);
     }
 
-    public int latToCell(double lat){
+    public int latToCell(double lat) {
         return (int) (lat * cellsPerDegVertical);
     }
 
     @Override
     public String toString() {
         return "ElevConfig{" +
-                "chunkWidthDeg=" + chunkWidthDeg +
-                ", chunkHeightDeg=" + chunkHeightDeg +
-                ", chunkWidthCells=" + chunkWidthCells +
-                ", chunkHeightCells=" + chunkHeightCells +
-                ", cellWidthDeg=" + cellWidthDeg +
-                ", cellHeightDeg=" + cellHeightDeg +
-                '}';
+               "chunkWidthDeg=" + chunkWidthDeg +
+               ", chunkHeightDeg=" + chunkHeightDeg +
+               ", chunkWidthCells=" + chunkWidthCells +
+               ", chunkHeightCells=" + chunkHeightCells +
+               ", cellWidthDeg=" + cellWidthDeg +
+               ", cellHeightDeg=" + cellHeightDeg +
+               '}';
     }
 }

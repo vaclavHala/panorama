@@ -47,7 +47,6 @@ public class MyGdxGame extends ApplicationAdapter {
     ModelBatch modelBatch;
     UI ui;
 
-
     @Override
     public void create() {
         modelBatch = new ModelBatch();
@@ -57,106 +56,106 @@ public class MyGdxGame extends ApplicationAdapter {
         cam.near = .1f;
         cam.far = 25000f;
         cam.update();
+        System.out.println(cam.projection);
         control = new CameraInputController(cam);
 
         ui = new UI(Gdx.files);
         ui.create();
 
+        //        environment = new Environment();
+        //        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+        //        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0f, -1f, 0f));
 
-//        environment = new Environment();
-//        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-//        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0f, -1f, 0f));
-
-//        ElevConfig elevCfg = new ElevConfig(5,5,1200,1200);
-        ElevConfig elevCfg = new ElevConfig(1,1,10,10);
+        //        ElevConfig elevCfg = new ElevConfig(5,5,1200,1200);
+        ElevConfig elevCfg = new ElevConfig(1, 1, 10, 10);
 
         Gdx.app.log("MAIN", elevCfg.toString());
 
         LandscapeLoader loader = new LandscapeLoader(elevCfg);
 
+        //        try {
+        //            landscape = loader.loadLandscape(new Rectangle(14.3f, 48.8f, .1f, .1f));
+        //        } catch (IOException e){
+        //            throw new IllegalStateException(e);
+        //        }
 
-//        try {
-//            landscape = loader.loadLandscape(new Rectangle(14.3f, 48.8f, .1f, .1f));
-//        } catch (IOException e){
-//            throw new IllegalStateException(e);
-//        }
+        //        Array<Vector3> pointsLandscape = new Array<Vector3>();
+        //        for (int y = -60; y < 60; y++) {
+        //            for (int x = -60; x < 60; x++) {
+        //                pointsLandscape.add(new Vector3(
+        //                        x,
+        //                        (float) Math.random(),
+        //                        y));
+        //            }
+        //        }
 
-//        Array<Vector3> pointsLandscape = new Array<Vector3>();
-//        for (int y = -60; y < 60; y++) {
-//            for (int x = -60; x < 60; x++) {
-//                pointsLandscape.add(new Vector3(
-//                        x,
-//                        (float) Math.random(),
-//                        y));
-//            }
-//        }
+        //        String g3djLandscape = null;//new Convertor().pointsToLandscape(landscape);
 
-//        String g3djLandscape = null;//new Convertor().pointsToLandscape(landscape);
+        //        try {
+        //            BufferedWriter w = Files.newBufferedWriter(Paths.get("gen.g3dj"));
+        //            w.write(g3djLandscape);
+        //            w.close();
+        //        } catch (IOException e) {
+        //            e.printStackTrace();
+        //        }
 
-//        try {
-//            BufferedWriter w = Files.newBufferedWriter(Paths.get("gen.g3dj"));
-//            w.write(g3djLandscape);
-//            w.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        //        System.out.println("Got raw landscape");
 
-//        System.out.println("Got raw landscape");
+        //        String modelData = new Convertor().pointsToLandscape(new Array<Vector3>(new Vector3[]{
+        //                new Vector3(0,0,0),
+        //                new Vector3(0,0,1),
+        //                new Vector3(1,0,1),
+        //                new Vector3(1,0,0),
+        //        }));
+        //        FileHandle modelDataHandle = new InMemoryFileHandle(g3djLandscape);
 
-//        String modelData = new Convertor().pointsToLandscape(new Array<Vector3>(new Vector3[]{
-//                new Vector3(0,0,0),
-//                new Vector3(0,0,1),
-//                new Vector3(1,0,1),
-//                new Vector3(1,0,0),
-//        }));
-//        FileHandle modelDataHandle = new InMemoryFileHandle(g3djLandscape);
-
-//        Model model = new G3dModelLoader(new JsonReader()).loadModel(modelDataHandle);
-        ModelData landscapeModel=   loader.loadModelData(1, 1);
-//        ModelData landscapeModel=   loader.loadModelData(15, 50);
-        Model model= new Model(landscapeModel);
+        //        Model model = new G3dModelLoader(new JsonReader()).loadModel(modelDataHandle);
+        ModelData landscapeModel = loader.loadModelData(1, 1);
+        //        ModelData landscapeModel=   loader.loadModelData(15, 50);
+        Model model = new Model(landscapeModel);
         System.out.println("Got landscape model");
 
         ModelBuilder builder = new ModelBuilder();
 
         Material matX = new Material(ColorAttribute.createDiffuse(Color.RED));
-        ModelInstance arrX = new ModelInstance(builder.createArrow(new Vector3(0,0,0),new Vector3(1,0,0),matX, 1));
+        ModelInstance arrX = new ModelInstance(builder.createArrow(new Vector3(0, 0, 0), new Vector3(1, 0, 0), matX, 1));
         instances.add(arrX);
 
         Material matY = new Material(ColorAttribute.createDiffuse(Color.GREEN));
-        ModelInstance arrY = new ModelInstance(builder.createArrow(new Vector3(0,0,0),new Vector3(0,1,0),matY, 1));
+        ModelInstance arrY = new ModelInstance(builder.createArrow(new Vector3(0, 0, 0), new Vector3(0, 1, 0), matY, 1));
         instances.add(arrY);
 
         Material matZ = new Material(ColorAttribute.createDiffuse(Color.BLUE));
-        ModelInstance arrZ = new ModelInstance(builder.createArrow(new Vector3(0,0,0),new Vector3(0,0,1),matZ, 1));
+        ModelInstance arrZ = new ModelInstance(builder.createArrow(new Vector3(0, 0, 0), new Vector3(0, 0, 1), matZ, 1));
         instances.add(arrZ);
 
         Material matGrid = new Material(ColorAttribute.createDiffuse(Color.YELLOW));
-        ModelInstance grid = new ModelInstance(builder.createLineGrid(1000,1000,1,1,matGrid,1));
+        ModelInstance grid = new ModelInstance(builder.createLineGrid(1000, 1000, 1, 1, matGrid, 1));
         instances.add(grid);
 
         ModelInstance landscapeInstance = new ModelInstance(model);
-//        landscapeInstance.transform = new Matrix4(Vector3.Zero, new Quaternion(), new Vector3(1,.1f,1));
+        //        landscapeInstance.transform = new Matrix4(Vector3.Zero, new Quaternion(), new Vector3(1,.1f,1));
         instances.add(landscapeInstance);
 
+        ModelInstance ball = new ModelInstance(builder.createBox(.2F, .2F, .2F, matX, 1));
+        ball.transform.setTranslation(1, 1, 0);
+        instances.add(ball);
 
         InputMultiplexer inMux = new InputMultiplexer(ui.input(), control);
         Gdx.input.setInputProcessor(inMux);
 
-//        assets = new AssetManager();
-//        assets.load("gen.g3dj", Model.class);
-//        loading = true;
+        //        assets = new AssetManager();
+        //        assets.load("gen.g3dj", Model.class);
+        //        loading = true;
     }
 
-//    private void doneLoading() {
-//        Model ship = assets.get("gen.g3dj", Model.class);
-//        ModelInstance shipInstance = new ModelInstance(ship);
-//        instances.add(shipInstance);
-//        loading = false;
+    //    private void doneLoading() {
+    //        Model ship = assets.get("gen.g3dj", Model.class);
+    //        ModelInstance shipInstance = new ModelInstance(ship);
+    //        instances.add(shipInstance);
+    //        loading = false;
 
-
-//    }
-
+    //    }
 
     @Override
     public void resize(int width, int height) {
@@ -175,10 +174,10 @@ public class MyGdxGame extends ApplicationAdapter {
         modelBatch.render(this.instances);
         modelBatch.end();
 
-//        System.out.format("x:%f y:%f z:%f\n",cam.direction.x, cam.direction.y, cam.direction.z);
+        //        System.out.format("x:%f y:%f z:%f\n",cam.direction.x, cam.direction.y, cam.direction.z);
 
         Vector2 projectedToGround = new Vector2(cam.direction.x, cam.direction.z);
-        double camRot = - projectedToGround.angleRad(Vector2.X)* MathUtils.radiansToDegrees + 90;
+        double camRot = -projectedToGround.angleRad(Vector2.X) * MathUtils.radiansToDegrees + 90;
 
         ui.render(Gdx.graphics.getDeltaTime(), camRot);
     }
@@ -188,6 +187,6 @@ public class MyGdxGame extends ApplicationAdapter {
         instances.clear();
         modelBatch.dispose();
         ui.dispose();
-//        assets.dispose();
+        //        assets.dispose();
     }
 }

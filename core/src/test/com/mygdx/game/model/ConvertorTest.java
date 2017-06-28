@@ -22,10 +22,10 @@ import static org.mockito.Mockito.when;
 public class ConvertorTest {
 
     @Test
-    public void foo(){
+    public void foo() {
         short s = (short) 45000;
-        System.out.println( Integer.toBinaryString(45000) );
-        System.out.println( s );
+        System.out.println(Integer.toBinaryString(45000));
+        System.out.println(s);
     }
 
     @Test
@@ -33,6 +33,7 @@ public class ConvertorTest {
 
         Gdx.app = mock(Application.class);
         doAnswer(new Answer<Void>() {
+
             @Override
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
                 System.out.println(invocationOnMock.getArguments()[0] + " " + invocationOnMock.getArguments()[1]);
@@ -46,14 +47,13 @@ public class ConvertorTest {
         for (int y = -60; y < 60; y++) {
             for (int x = -60; x < 60; x++) {
                 pointsLandscape.add(new Vector3(
-                        x,
-                        (float) Math.random(),
-                        y));
+                                                x,
+                                                (float) Math.random(),
+                                                y));
             }
         }
 
         String g3djLandscape = conv.pointsToLandscape(pointsLandscape);
-
 
     }
 

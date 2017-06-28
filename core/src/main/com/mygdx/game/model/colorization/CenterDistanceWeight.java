@@ -28,7 +28,7 @@ public class CenterDistanceWeight implements Weight {
     public float weight(float x, float y) {
         float dist = center.dst(x, y);
         return dist < maxFull ? 1 :
-                (dist > minEmpty ? 0 :
-                        1 - (dist - maxFull) / delta);
+                             (dist > minEmpty ? 0 :
+                                             1 - (dist - maxFull) / delta);
     }
 }
