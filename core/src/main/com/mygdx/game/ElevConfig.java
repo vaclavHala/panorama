@@ -2,27 +2,26 @@ package com.mygdx.game;
 
 public class ElevConfig {
 
-    private static final int LAT_MAX = 90;
-    private static final int LON_MAX = 180;
-
     public final int cellsPerDegHorizontal;
     public final int cellsPerDegVertical;
     public final int chunkWidthDeg;
     public final int chunkHeightDeg;
     public final int chunkWidthCells;
     public final int chunkHeightCells;
-    public final double cellWidthDeg;
-    public final double cellHeightDeg;
+    public final float cellWidthDeg;
+    public final float cellHeightDeg;
+    public final float heightScaler;
 
-    public ElevConfig(int chunkWidthDeg, int chunkHeightDeg, int cellsPerDegHorizontal, int cellsPerDegVertical) {
+    public ElevConfig(int chunkWidthDeg, int chunkHeightDeg, int cellsPerDegHorizontal, int cellsPerDegVertical, final float heightScaler) {
         this.chunkWidthDeg = chunkWidthDeg;
         this.chunkHeightDeg = chunkHeightDeg;
         this.cellsPerDegHorizontal = cellsPerDegHorizontal;
         this.cellsPerDegVertical = cellsPerDegVertical;
         this.chunkWidthCells = chunkWidthDeg * cellsPerDegHorizontal;
         this.chunkHeightCells = chunkHeightDeg * cellsPerDegVertical;
-        this.cellWidthDeg = 1.0 / cellsPerDegHorizontal;
-        this.cellHeightDeg = 1.0 / cellsPerDegVertical;
+        this.cellWidthDeg = 1.0F / cellsPerDegHorizontal;
+        this.cellHeightDeg = 1.0F / cellsPerDegVertical;
+        this.heightScaler = heightScaler;
     }
 
     public int lonToCell(double lon) {
@@ -42,6 +41,7 @@ public class ElevConfig {
                ", chunkHeightCells=" + chunkHeightCells +
                ", cellWidthDeg=" + cellWidthDeg +
                ", cellHeightDeg=" + cellHeightDeg +
+               ", height scaler=" + heightScaler +
                '}';
     }
 }

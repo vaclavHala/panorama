@@ -1,5 +1,6 @@
 package com.mygdx.game.model;
 
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,14 +11,10 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.ElevConfig;
-import com.mygdx.game.model.colorization.CenterDistanceWeight;
 import com.mygdx.game.model.colorization.ColorModel;
-import com.mygdx.game.model.colorization.HeightColorModel;
-import com.mygdx.game.model.colorization.MaskedColorModel;
 import com.mygdx.game.model.colorization.SolidColorModel;
-import java.io.IOException;
+import static java.lang.String.format;
 import java.util.Arrays;
 import static java.util.Arrays.asList;
 
@@ -67,87 +64,35 @@ public class LandscapeLoader {
         ANIMATION = new G3DJTemplate.G3DJAnimation();
     }
 
+    private final Files files;
     private final ElevConfig elevCfg;
 
-    public LandscapeLoader(ElevConfig elevCfg) {
+    public LandscapeLoader(Files files, ElevConfig elevCfg) {
+        this.files = files;
         this.elevCfg = elevCfg;
     }
 
-    public ModelData loadModelData(double lon, double lat) {
-        double lon0 = lon - TOTAL_WIDTH_DEG / 2;
-        double lat0 = lat - TOTAL_HEIGHT_DEG / 2;
+    public ModelData loadModelData(
+            float lon, float lat,
+            float width, float height) {
         Gdx.app.log(TAG, "Loading landscape. Deg:" +
-                         " lon0=" + lon0 + ", lat0=" + lat0 +
-                         ", width=" + TOTAL_WIDTH_DEG + ", height=" + TOTAL_HEIGHT_DEG);
-        Loader loader = new Loader(elevCfg, Gdx.files);
-        try {
-            Landscape landscape = loader.loadLandscape(
-                                                       elevCfg.lonToCell(lon0), elevCfg.latToCell(lat0),
-                                                       elevCfg.lonToCell(TOTAL_WIDTH_DEG), elevCfg.latToCell(TOTAL_HEIGHT_DEG));
-            //
-            ModelData model = new ModelData();
-            model.version[0] = 0;
-            model.version[1] = 1;
-            model.id = MODEL_ID;
+                         " lon=" + lon + ", lat=" + lat +
+                         ", width=" + width + ", height=" + height);
 
-            colorize(landscape, (float) lon, (float) lat, elevCfg);
-            addMesh(model, landscape);
-            addMaterial(model);
-            addNode(model);
+        ModelData model = new ModelData();
+        model.version[0] = 0;
+        model.version[1] = 1;
+        model.id = MODEL_ID;
 
-            return model;
-        } catch (IOException e) {
-            // TODO
-            throw new IllegalStateException(e);
-        }
+        //            colorize(landscape, (float) lon, (float) lat, elevCfg);
+        addMesh(model, lon, lat, width, height);
+        addMaterial(model);
+        addNode(model);
+
+        return model;
 
     }
 
-    /**
-     * Returned model can either be stored to disk and loaded via regular means
-     * or wrapped in {@link InMemoryFileHandle} and fed to
-     * {@link com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader G3dModelLoader} for direct display
-     *
-     * @return String representation of the generated moedel in G3DJ format
-     */
-    //    public ModelData pointsToLandscape(Landscape landscape) {
-    //
-    ////        Gdx.app.log(TAG, "Creating landscape model. points.size=" + points.size);
-    //
-    //        Gdx.app.log(TAG, "Coloring terrain.");
-
-    //        G3DJTemplate model = new G3DJTemplate();
-    //        model.version = VERSION;
-    //        model.id = MODEL_ID;
-    //
-    //        G3DJTemplate.G3DJMesh mesh = new G3DJTemplate.G3DJMesh();
-    //        mesh.attributes = asList(POSITION, COLOR);
-    //        mesh.vertices = coloredVertices.toArray();
-    ////                asList(
-    ////                0f, 0f, 0f, 1f, 0f, 0f, 1f,
-    ////                0f, 0f, 1f, 0f, 0f, 1f, 1f,
-    ////                1f, 0f, 1f, 0f, 1f, 0f, 1f,
-    ////                1f, 0f, 0f, 0f, 1f, 0f, 1f
-    ////        );
-    //
-    //        G3DJTemplate.G3DJPart part = new G3DJTemplate.G3DJPart();
-    //        part.id = PART_ID;
-    //        part.type = TRIANGLES;
-    //        part.indices = triangles.toArray();
-    ////                new int[]{
-    ////                0, 2, 3
-    ////        };
-    //
-    //        mesh.parts = asList(part);
-    //        model.meshes = asList(mesh);
-    //
-    //        model.materials = asList(MATERIAL);
-    //        model.nodes = asList(NODE);
-    //        model.animations = asList(ANIMATION);
-    //
-    //        Gdx.app.log(TAG, "Model ready, writing to JSON.");
-    //        return json.toJson(model);
-    //    }
     private void colorize(Landscape input, float centerX, float centerY, ElevConfig elevCfg) {
         float minHeight = Float.MAX_VALUE;
         float maxHeight = Float.MIN_VALUE;
@@ -179,51 +124,129 @@ public class LandscapeLoader {
         }
     }
 
-    private void addMesh(ModelData model, Landscape landscape) {
+    private void addMesh(ModelData model,
+            float lonFrom, float latFrom,
+            float width, float height) {
         ModelMesh mesh = new ModelMesh();
         //mesh.id = PART_ID;
 
-        mesh.attributes = new VertexAttribute[]{
-                                                VertexAttribute.Position(),
+        mesh.attributes = new VertexAttribute[]{VertexAttribute.Position(),
                                                 VertexAttribute.ColorPacked()
         };
 
-        mesh.vertices = landscape.cells;
+        float lonTo = lonFrom + width;
+        float latTo = latFrom + height;
+        // to avoid negative numbers shift by 180 degrees, will be subtracted on output
+        // in particular we always want to find boundary lower than given exact value in degrees
+        // if there were negative numbers this would not work properly
+        float normLonFrom = lonFrom + 180;
+        float normLatFrom = latFrom + 180;
+        float normLonTo = lonTo + 180;
+        float normLatTo = latTo + 180;
+
+        //truncates to left/bottom most chunk boundary
+        int chunk0Lon = (int) (normLonFrom / elevCfg.chunkWidthDeg) * elevCfg.chunkWidthDeg - 180;
+        int chunk0Lat = (int) (normLatFrom / elevCfg.chunkHeightDeg) * elevCfg.chunkHeightDeg - 180;
+
+        int chunkNLon = (int) (normLonTo / elevCfg.chunkWidthDeg) * elevCfg.chunkWidthDeg - 180;
+        int chunkNLat = (int) (normLatTo / elevCfg.chunkHeightDeg) * elevCfg.chunkHeightDeg - 180;
+
+        int chunksHorizontal = (chunkNLon - chunk0Lon) / elevCfg.chunkWidthDeg + 1;
+        int chunksVertical = (chunkNLat - chunk0Lat) / elevCfg.chunkHeightDeg + 1;
+
+        int cell0Col = (int) ((lonFrom - chunk0Lon) * elevCfg.cellsPerDegHorizontal);
+        int cell0Row = (int) ((latFrom - chunk0Lat) * elevCfg.cellsPerDegVertical);
+
+        int cellNCol = (int) ((lonTo - chunk0Lon) * elevCfg.cellsPerDegHorizontal);
+        int cellNRow = (int) ((latTo - chunk0Lat) * elevCfg.cellsPerDegVertical);
+
+        int cellsHorizontal = (chunksHorizontal - 1) * elevCfg.chunkWidthCells + cellNCol - cell0Col;
+        int cellsVertical = (chunksVertical - 1) * elevCfg.chunkHeightCells + cellNRow - cell0Row;
+
+        int vertCount = cellsHorizontal * cellsVertical;
+        int triCount = (cellsHorizontal - 1) * (cellsVertical - 1) * 2;
+
+        Gdx.app.log(TAG, "elev=" + elevCfg + "\n" +
+                         "lonFrom=" + lonFrom + ", " +
+                         "latFrom=" + latFrom + ", " +
+                         "lonTo=" + lonTo + ", " +
+                         "latTo=" + latTo + "\n" +
+                         "chunk0Lon=" + chunk0Lon + ", " +
+                         "chunk0Lat=" + chunk0Lat + ", " +
+                         "chunkNLon=" + chunkNLon + ", " +
+                         "chunkNLat=" + chunkNLat + "\n" +
+                         "chunksHorizontal=" + chunksHorizontal + ", " +
+                         "chunksVertical=" + chunksVertical + "\n" +
+                         "cell0Col=" + cell0Col + ", " +
+                         "cell0Row=" + cell0Row + ", " +
+                         "cellNCol=" + cellNCol + ", " +
+                         "cellNRow=" + cellNRow + "\n" +
+                         "cellsHorizontal=" + cellsHorizontal + ", " +
+                         "cellsVertical=" + cellsVertical + "\n" +
+                         "vertCount=" + vertCount + ", " +
+                         "triCount=" + triCount
+               );
+
+        FileBackedElevData[] chunks = new FileBackedElevData[chunksHorizontal * chunksVertical];
+        for (int row = 0; row < chunksVertical; row++) {
+            for (int col = 0; col < chunksHorizontal; col++) {
+                int i = row * chunksHorizontal + col;
+                int chunkLon = chunk0Lon + col * elevCfg.chunkWidthDeg;
+                int chunkLat = chunk0Lat + row * elevCfg.chunkHeightDeg;
+                String chunkName = format("chunk_%c%d_%c%d",
+                                          chunkLat < 0 ? 'e' : 'w', chunkLat,
+                                          chunkLat < 0 ? 's' : 'n', chunkLon);
+                Gdx.app.log(TAG, "[r" + row + ",c" + col + "] Opening chunk " + chunkName);
+                chunks[i] = new FileBackedElevData(this.files, chunkName);
+            }
+        }
+
+        float[] vertices = new float[3 * vertCount];
+        short[] triIndices = new short[3 * triCount];
+        CollatedElevData collated = new CollatedElevData(chunks, chunksHorizontal, chunksVertical,
+                                                         elevCfg.chunkWidthCells, elevCfg.chunkHeightCells);
+        ElevData cropped = new CroppedElevData(collated,
+                                               chunksHorizontal * elevCfg.chunkWidthCells,
+                                               chunksVertical * elevCfg.chunkHeightCells,
+                                               cell0Row, cell0Col,
+                                               cellNRow, cellNCol);
+
+        float cell0Lon = chunk0Lon + cell0Col * elevCfg.cellWidthDeg;
+        float cell0Lat = chunk0Lat + cell0Row * elevCfg.cellHeightDeg;
+        int t = 0;
+        for (int row = 0; row < cellsVertical; row++) {
+            for (int col = 0; col < cellsHorizontal; col++) {
+                //                float lon = cell0Lon + col * elevCfg.cellWidthDeg;
+                //                float lat = cell0Lat + row * elevCfg.cellHeightDeg;
+                float lon = col * elevCfg.cellWidthDeg;
+                float lat = row * elevCfg.cellHeightDeg;
+                float elev = cropped.next() * elevCfg.heightScaler;
+                int v = (short) (row * cellsHorizontal + col);
+                vertices[v * 3] = lon;
+                vertices[v * 3 + 1] = elev;
+                vertices[v * 3 + 2] = lat;
+                if (row > 0 && col > 0) { // nothing to triangulate on first row/col
+                    triIndices[t * 3] = (short) v;
+                    triIndices[t * 3 + 1] = (short) (v - cellsHorizontal - 1);
+                    triIndices[t * 3 + 2] = (short) (v - cellsHorizontal);
+                    t++;
+                    triIndices[t * 3] = (short) v;
+                    triIndices[t * 3 + 1] = (short) (v - 1);
+                    triIndices[t * 3 + 2] = (short) (v - cellsHorizontal - 1);
+                    t++;
+                }
+            }
+        }
+
+        //        Gdx.app.log(TAG, "verts: " + Arrays.toString(vertices) + "\ntris: " + Arrays.toString(triIndices));
+
+        mesh.vertices = vertices;
         ModelMeshPart trianglesPart = new ModelMeshPart();
         trianglesPart.id = PART_ID;
         trianglesPart.primitiveType = GL20.GL_TRIANGLES;
-        trianglesPart.indices = triangles(landscape);
+        trianglesPart.indices = triIndices;
         mesh.parts = new ModelMeshPart[]{trianglesPart};
         model.meshes.add(mesh);
-    }
-
-    private short[] triangles(Landscape landscape) {
-        // - 1 because there are n-1 edges in string of n vertices (cells are vertices)
-        // * 2 because there are two tris per square
-        int triCount = (landscape.widthCells - 1) * (landscape.heightCells - 1) * 2;
-        Gdx.app.log(TAG, "landscape width=" + landscape.widthCells + ", height=" + landscape.heightCells +
-                         " will have tricount=" + triCount);
-        // * 3 because 3 indices per triangle
-        short[] indices = new short[triCount * 3];
-        int i = 0;
-        // - 1 because we do not want triangulation to touch outer edge loop
-        for (short y = 0; y < landscape.heightCells - 1; y++) {
-            for (short x = 0; x < landscape.widthCells - 1; x++) {
-                short base = (short) (y * landscape.widthCells + x);
-                //has to go clockwise
-                indices[i] = base;
-                indices[i + 1] = (short) (base + 1);
-                indices[i + 2] = (short) (base + landscape.widthCells + 1);
-
-                indices[i + 3] = base;
-                indices[i + 4] = (short) (base + landscape.widthCells + 1);
-                indices[i + 5] = (short) (base + landscape.widthCells);
-                // + 6 because we add 6 indices for two triangles in each iteration
-                i += 6;
-            }
-        }
-        System.out.println(Arrays.toString(indices));
-        return indices;
     }
 
     private void addMaterial(ModelData model) {

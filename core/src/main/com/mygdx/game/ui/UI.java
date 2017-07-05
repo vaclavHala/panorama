@@ -3,16 +3,14 @@ package com.mygdx.game.ui;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -42,6 +40,7 @@ public class UI implements Disposable {
         Skin skin = new Skin();
         skin.addRegions(atlas);
         skin.add("font", new BitmapFont(files.internal("default.fnt"), files.internal("default.png"), false));
+        skin.add("default", new Label.LabelStyle(skin.getFont("font"), Color.BLACK));
 
         TextButtonStyle style = new TextButtonStyle();
         style.up = new NinePatchDrawable(skin.getPatch("default-round"));
@@ -75,6 +74,9 @@ public class UI implements Disposable {
         layout.add(lonTweaker).left().row();
         layout.add(dirTweaker).left().row();
 
+        label = new Label("Text here", skin);
+        layout.add(label);
+
         ui.addActor(layout);
     }
 
@@ -87,8 +89,13 @@ public class UI implements Disposable {
         ui.getViewport().update(width, height, true);
     }
 
+    private Actor label;
+    public float labelX;
+    public float labelY;
+
     public void render(float delta, double camRot) {
         ui.act(delta);
+        label.setPosition(labelX, labelY);
         compas.update(camRot);
         ui.draw();
     }

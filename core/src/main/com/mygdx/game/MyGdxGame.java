@@ -28,6 +28,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
+import com.mygdx.game.common.FlippedCamera;
 import com.mygdx.game.model.Convertor;
 import com.mygdx.game.model.InMemoryFileHandle;
 import com.mygdx.game.model.LandscapeLoader;
@@ -40,7 +41,7 @@ import java.nio.file.Paths;
 
 public class MyGdxGame extends ApplicationAdapter {
 
-    PerspectiveCamera cam;
+    FlippedCamera cam;
     CameraInputController control;
 
     Array<ModelInstance> instances = new Array<ModelInstance>();
@@ -50,14 +51,25 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void create() {
         modelBatch = new ModelBatch();
-        cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam = new FlippedCamera(45, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0, 0, 0);
         cam.lookAt(0, 0, 0);
-        cam.near = .1f;
-        cam.far = 25000f;
-        cam.update();
+        // TODO find out which bits affect near and far plane
+        cam.projection.set(new float[]{
+                                       -1.1331264F, 0.0F, 0.0F, 0.0F,
+                                       0.0F, 1.5108352F, 0.0F, 0.0F,
+                                       0.0F, 0.0F, -1.020202F, -2.020202F,
+                                       0.0F, 0.0F, -1.0F, 0.0F,});
+
         System.out.println(cam.projection);
-        control = new CameraInputController(cam);
+        control = new CameraInputController(cam) {
+
+            @Override
+            protected boolean process(float deltaX, float deltaY, int button) {
+                return super.process(-deltaX, deltaY, button);
+            }
+
+        };
 
         ui = new UI(Gdx.files);
         ui.create();
@@ -67,11 +79,11 @@ public class MyGdxGame extends ApplicationAdapter {
         //        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0f, -1f, 0f));
 
         //        ElevConfig elevCfg = new ElevConfig(5,5,1200,1200);
-        ElevConfig elevCfg = new ElevConfig(1, 1, 10, 10);
+        ElevConfig elevCfg = new ElevConfig(1, 1, 3601, 3601, 0.00001F);
 
         Gdx.app.log("MAIN", elevCfg.toString());
 
-        LandscapeLoader loader = new LandscapeLoader(elevCfg);
+        LandscapeLoader loader = new LandscapeLoader(Gdx.files, elevCfg);
 
         //        try {
         //            landscape = loader.loadLandscape(new Rectangle(14.3f, 48.8f, .1f, .1f));
@@ -110,7 +122,8 @@ public class MyGdxGame extends ApplicationAdapter {
         //        FileHandle modelDataHandle = new InMemoryFileHandle(g3djLandscape);
 
         //        Model model = new G3dModelLoader(new JsonReader()).loadModel(modelDataHandle);
-        ModelData landscapeModel = loader.loadModelData(1, 1);
+        ModelData landscapeModel = loader.loadModelData(0.5F, 0.5F,
+                                                        0.05F, 0.05F);
         //        ModelData landscapeModel=   loader.loadModelData(15, 50);
         Model model = new Model(landscapeModel);
         System.out.println("Got landscape model");
@@ -134,10 +147,11 @@ public class MyGdxGame extends ApplicationAdapter {
         instances.add(grid);
 
         ModelInstance landscapeInstance = new ModelInstance(model);
+        landscapeInstance.transform.scale(100, 100, 100);
         //        landscapeInstance.transform = new Matrix4(Vector3.Zero, new Quaternion(), new Vector3(1,.1f,1));
         instances.add(landscapeInstance);
 
-        ModelInstance ball = new ModelInstance(builder.createBox(.2F, .2F, .2F, matX, 1));
+        ball = new ModelInstance(builder.createBox(.2F, .2F, .2F, matX, 1));
         ball.transform.setTranslation(1, 1, 0);
         instances.add(ball);
 
@@ -156,6 +170,8 @@ public class MyGdxGame extends ApplicationAdapter {
     //        loading = false;
 
     //    }
+
+    ModelInstance ball;
 
     @Override
     public void resize(int width, int height) {
@@ -179,6 +195,9 @@ public class MyGdxGame extends ApplicationAdapter {
         Vector2 projectedToGround = new Vector2(cam.direction.x, cam.direction.z);
         double camRot = -projectedToGround.angleRad(Vector2.X) * MathUtils.radiansToDegrees + 90;
 
+        Vector3 ballPos = cam.project(ball.transform.getTranslation(new Vector3()));
+        ui.labelX = ballPos.x;
+        ui.labelY = ballPos.y;
         ui.render(Gdx.graphics.getDeltaTime(), camRot);
     }
 

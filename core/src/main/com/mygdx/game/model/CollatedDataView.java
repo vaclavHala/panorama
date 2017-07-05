@@ -11,12 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import static java.lang.String.format;
 
-public class CollatedDataView<T> {
+public class CollatedDataView {
 
-    private static final String TAG = CollatedElevStream.class.getSimpleName();
+    private static final String TAG = CollatedElevData.class.getSimpleName();
 
-    //    private final ElevConfig elevCfg;
-    //    private final DataInputStream[][] ins;
     //
     //    private int at;
     //    private int chunksHorizontal;
@@ -63,7 +61,7 @@ public class CollatedDataView<T> {
     //        return chunk0Lat;
     //    }
     //
-    //    public short readNext() throws IOException {
+    //    public short next() throws IOException {
     //        short out = stream().readShort();
     //        move(1);
     //        return out;
