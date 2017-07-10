@@ -28,19 +28,13 @@ public class UI implements Disposable {
         this.files = files;
     }
 
-    public void create() {
+    public void create(Skin skin) {
         ui = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(ui);
 
         layout = new Table().top();
         layout.setFillParent(true);
         layout.setDebug(true);
-
-        TextureAtlas atlas = new TextureAtlas(files.internal("uiskin.atlas"), files.internal(""));
-        Skin skin = new Skin();
-        skin.addRegions(atlas);
-        skin.add("font", new BitmapFont(files.internal("default.fnt"), files.internal("default.png"), false));
-        skin.add("default", new Label.LabelStyle(skin.getFont("font"), Color.BLACK));
 
         TextButtonStyle style = new TextButtonStyle();
         style.up = new NinePatchDrawable(skin.getPatch("default-round"));
@@ -74,8 +68,8 @@ public class UI implements Disposable {
         layout.add(lonTweaker).left().row();
         layout.add(dirTweaker).left().row();
 
-        label = new Label("Text here", skin);
-        layout.add(label);
+        //        label = new Label("Text here", skin);
+        //        layout.add(label);
 
         ui.addActor(layout);
     }
@@ -89,13 +83,13 @@ public class UI implements Disposable {
         ui.getViewport().update(width, height, true);
     }
 
-    private Actor label;
-    public float labelX;
-    public float labelY;
+    //    private Actor label;
+    //    public float labelX;
+    //    public float labelY;
 
     public void render(float delta, double camRot) {
         ui.act(delta);
-        label.setPosition(labelX, labelY);
+        //        label.setPosition(labelX, labelY);
         compas.update(camRot);
         ui.draw();
     }

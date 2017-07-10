@@ -10,9 +10,16 @@ public class ElevConfig {
     public final int chunkHeightCells;
     public final float cellWidthDeg;
     public final float cellHeightDeg;
-    public final float heightScaler;
 
-    public ElevConfig(int chunkWidthDeg, int chunkHeightDeg, int cellsPerDegHorizontal, int cellsPerDegVertical, final float heightScaler) {
+    /** multiply degrees by this to get world coord */
+    public final float scalerLon;
+    /** multiply degrees by this to get world coord */
+    public final float scalerLat;
+    /** multiply meters by this to get world coord */
+    public final float scalerElev;
+
+    public ElevConfig(int chunkWidthDeg, int chunkHeightDeg, int cellsPerDegHorizontal, int cellsPerDegVertical,
+            float scalerLon, float scalerLat, float scalerElev) {
         this.chunkWidthDeg = chunkWidthDeg;
         this.chunkHeightDeg = chunkHeightDeg;
         this.cellsPerDegHorizontal = cellsPerDegHorizontal;
@@ -21,7 +28,9 @@ public class ElevConfig {
         this.chunkHeightCells = chunkHeightDeg * cellsPerDegVertical;
         this.cellWidthDeg = 1.0F / cellsPerDegHorizontal;
         this.cellHeightDeg = 1.0F / cellsPerDegVertical;
-        this.heightScaler = heightScaler;
+        this.scalerLon = scalerLon;
+        this.scalerLat = scalerLat;
+        this.scalerElev = scalerElev;
     }
 
     public int lonToCell(double lon) {
@@ -41,7 +50,9 @@ public class ElevConfig {
                ", chunkHeightCells=" + chunkHeightCells +
                ", cellWidthDeg=" + cellWidthDeg +
                ", cellHeightDeg=" + cellHeightDeg +
-               ", height scaler=" + heightScaler +
+               ", scalerLon=" + scalerLon +
+               ", scalerLat=" + scalerLat +
+               ", scalerElev=" + scalerElev +
                '}';
     }
 }
