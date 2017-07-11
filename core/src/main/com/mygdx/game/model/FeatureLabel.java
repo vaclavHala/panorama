@@ -18,21 +18,24 @@ public class FeatureLabel extends Actor {
     private final NinePatch patch;
     private final BitmapFont font;
     private final WorldToScreenProjection projection;
+    private final IsVisible visibility;
     private final Vector3 featureWorldPosition;
     private final String featureName;
     private final Vector2 featureScreenPosition;
 
     public FeatureLabel(
+            String featureName,
+            Vector3 featureWorldPosition,
             TextureAtlas atlat, Skin skin,
             WorldToScreenProjection projection,
-            Feature feature) {
+            IsVisible isVisible) {
         this.patch = atlat.createPatch("label_leg.dark");
         this.font = skin.getFont("font");
-        this.featureWorldPosition = feature.position;
+        this.featureWorldPosition = featureWorldPosition;
         this.projection = projection;
-        this.featureName = feature.name;
+        this.visibility = isVisible;
+        this.featureName = featureName;
         this.featureScreenPosition = new Vector2();
-
     }
 
     private Vector3 origin;
@@ -47,15 +50,19 @@ public class FeatureLabel extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        if (this.featureScreenPosition.y < 0) {
-            return; // feature is offscreen
+        //        if (this.featureScreenPosition.y < 0) {
+        //            return; // feature is offscreen
+        //        }
+        if (!this.visibility.isVisible()) {
+            return; // landscape obscures the feature
         }
+
         this.font.draw(batch, featureName,
-                       this.featureScreenPosition.x, Gdx.graphics.getHeight() - 100 + 20);
-        float legLength = Gdx.graphics.getHeight() - 100 - this.featureScreenPosition.y;
-        this.patch.draw(batch,
-                        this.featureScreenPosition.x, this.featureScreenPosition.y,
-                        4, legLength);
+                       this.featureScreenPosition.x, this.featureScreenPosition.y);
+        //        float legLength = Gdx.graphics.getHeight() - 100 - this.featureScreenPosition.y;
+        //        this.patch.draw(batch,
+        //                        this.featureScreenPosition.x, this.featureScreenPosition.y,
+        //                        4, legLength);
 
     }
 

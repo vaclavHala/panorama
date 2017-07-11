@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.mygdx.game.ElevConfig;
+import com.mygdx.game.common.CoordTransform;
 
 public class ElevationResolution {
 
@@ -13,17 +13,13 @@ public class ElevationResolution {
     private final float[] vertices;
     private final short[] triIndices;
     private final int vertComponnets;
-    private final float scalerLon;
-    private final float scalerLat;
-    private final float scalerElev;
+    private final CoordTransform coordTrans;
 
-    public ElevationResolution(float[] vertices, short[] triIndices, int vertComponnets, ElevConfig elevConfig) {
+    public ElevationResolution(float[] vertices, short[] triIndices, int vertComponnets, CoordTransform coordTrans) {
         this.vertices = vertices;
         this.triIndices = triIndices;
         this.vertComponnets = vertComponnets;
-        this.scalerLon = elevConfig.scalerLon;
-        this.scalerLat = elevConfig.scalerLat;
-        this.scalerElev = elevConfig.scalerElev;
+        this.coordTrans = coordTrans;
     }
 
     public float projectToLandscape(Vector2 landscapePosition) {
@@ -36,14 +32,14 @@ public class ElevationResolution {
      * Output is in meters above sea level.
      */
     public float projectToLandscape(float lon, float lat) {
-        Vector3 origin = new Vector3(lon * this.scalerLon, lat * this.scalerLat, 10000 * this.scalerElev);
+        Vector3 origin = coordTrans.toInternal(lon, lat, 10000);
         Ray ray = new Ray(origin, DOWN);
         Vector3 intersection = new Vector3();
         boolean hit = Intersector.intersectRayTriangles(ray, this.vertices, this.triIndices, this.vertComponnets, intersection);
         if (!hit) {
             throw new IllegalArgumentException("Position " + lon + ", " + lat + " does not intersect landscape");
         }
-        return intersection.z / this.scalerElev;
+        return coordTrans.toExternalElev(intersection.z);
     }
 
 }

@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
 import com.mygdx.game.ElevConfig;
+import com.mygdx.game.common.CoordTransform;
 import com.mygdx.game.model.colorization.ColorModel;
 import com.mygdx.game.model.colorization.SolidColorModel;
 import static java.lang.Math.min;
@@ -67,10 +68,12 @@ public class LandscapeLoader {
 
     private final Files files;
     private final ElevConfig elevCfg;
+    private final CoordTransform coordTrans;
 
-    public LandscapeLoader(Files files, ElevConfig elevCfg) {
+    public LandscapeLoader(Files files, ElevConfig elevCfg, CoordTransform coordTrans) {
         this.files = files;
         this.elevCfg = elevCfg;
+        this.coordTrans = coordTrans;
     }
 
     public ModelData loadModelData(
@@ -213,11 +216,11 @@ public class LandscapeLoader {
         int t = 0;
         for (int row = 0; row < cellsVertical; row++) {
             for (int col = 0; col < cellsHorizontal; col++) {
-                float lon = (cell0Lon + col * elevCfg.cellWidthDeg) * elevCfg.scalerLon;
-                float lat = (cell0Lat + row * elevCfg.cellHeightDeg) * elevCfg.scalerLat;
+                float lon = coordTrans.toInternalLon(cell0Lon + col * elevCfg.cellWidthDeg);
+                float lat = coordTrans.toInternalLat(cell0Lat + row * elevCfg.cellHeightDeg);
                 //                float lon = col * elevCfg.cellWidthDeg;
                 //                float lat = row * elevCfg.cellHeightDeg;
-                float elev = cropped.next() * elevCfg.scalerElev;
+                float elev = coordTrans.toInternalElev(cropped.next());
 
                 int v = (short) (row * cellsHorizontal + col);
                 vertices[v * vComponents] = lon;

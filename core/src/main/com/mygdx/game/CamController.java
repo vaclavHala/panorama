@@ -22,7 +22,7 @@ public class CamController extends GestureDetector {
     /** The button for translating the camera along the up/right plane */
     public int translateButton = Input.Buttons.RIGHT;
     /** The units to translate the camera when moved the full width or height of the screen. */
-    public float translateUnits = 10f; // FIXME auto calculate this based on the target
+    public float translateUnits = 100f; // FIXME auto calculate this based on the target
     /** The button for translating the camera along the direction axis */
     public int forwardButton = Input.Buttons.MIDDLE;
     /** The key which must be pressed to activate rotate, translate and forward or 0 to always activate. */
@@ -32,7 +32,7 @@ public class CamController extends GestureDetector {
     /** Whether scrolling requires the activeKey to be pressed (false) or always allow scrolling (true). */
     public boolean alwaysScroll = true;
     /** The weight for each scrolled amount. */
-    public float scrollFactor = -0.1f;
+    public float scrollFactor = -1f;
     /** World units per screen size */
     public float pinchZoomFactor = 10f;
     /** Whether to update the camera after it has been changed. */
@@ -45,14 +45,7 @@ public class CamController extends GestureDetector {
     public boolean forwardTarget = true;
     /** Whether to update the target on scroll */
     public boolean scrollTarget = false;
-    public int forwardKey = Input.Keys.W;
-    protected boolean forwardPressed;
-    public int backwardKey = Input.Keys.S;
-    protected boolean backwardPressed;
-    public int rotateRightKey = Input.Keys.A;
-    protected boolean rotateRightPressed;
-    public int rotateLeftKey = Input.Keys.D;
-    protected boolean rotateLeftPressed;
+
     /** The camera. */
     public Camera camera;
     /** The current (first) button being pressed. */
@@ -122,25 +115,6 @@ public class CamController extends GestureDetector {
     }
 
     public void update() {
-        if (rotateRightPressed || rotateLeftPressed || forwardPressed || backwardPressed) {
-            final float delta = Gdx.graphics.getDeltaTime();
-            if (rotateRightPressed)
-                camera.rotate(camera.up, -delta * rotateAngle);
-            if (rotateLeftPressed)
-                camera.rotate(camera.up, delta * rotateAngle);
-            if (forwardPressed) {
-                camera.translate(tmpV1.set(camera.direction).scl(delta * translateUnits));
-                if (forwardTarget)
-                    target.add(tmpV1);
-            }
-            if (backwardPressed) {
-                camera.translate(tmpV1.set(camera.direction).scl(-delta * translateUnits));
-                if (forwardTarget)
-                    target.add(tmpV1);
-            }
-            if (autoUpdate)
-                camera.update();
-        }
     }
 
     private int touched;
@@ -223,33 +197,11 @@ public class CamController extends GestureDetector {
 
     @Override
     public boolean keyDown(int keycode) {
-        if (keycode == activateKey)
-            activatePressed = true;
-        if (keycode == forwardKey)
-            forwardPressed = true;
-        else if (keycode == backwardKey)
-            backwardPressed = true;
-        else if (keycode == rotateRightKey)
-            rotateRightPressed = true;
-        else if (keycode == rotateLeftKey)
-            rotateLeftPressed = true;
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == activateKey) {
-            activatePressed = false;
-            button = -1;
-        }
-        if (keycode == forwardKey)
-            forwardPressed = false;
-        else if (keycode == backwardKey)
-            backwardPressed = false;
-        else if (keycode == rotateRightKey)
-            rotateRightPressed = false;
-        else if (keycode == rotateLeftKey)
-            rotateLeftPressed = false;
         return false;
     }
 }
