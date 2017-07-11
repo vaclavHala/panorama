@@ -33,10 +33,15 @@ import static java.util.Arrays.asList;
 //Length in meters of 1° of longitude = 40075 km * cos( latitude ) / 360
 // ~ 78.72 at 45°
 
+// Coordinate system is mapped as follows:
+// longitude ~ X with matching sign
+// latitude ~ Y with mactching sign
+// elevation ~ Z with matching sign
+
 public class MyGdxGame extends ApplicationAdapter {
 
     PerspectiveCamera cam;
-    CameraInputController control;
+    CamController control;
 
     Array<ModelInstance> instances = new Array<ModelInstance>();
     ModelBatch modelBatch;
@@ -45,32 +50,34 @@ public class MyGdxGame extends ApplicationAdapter {
 
     ModelBuilder builder = new ModelBuilder();
 
+    ElevConfig elevCfg;
+
     @Override
     public void create() {
         modelBatch = new ModelBatch();
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.up.set(0, 0, 1);
         cam.position.set(0, 0, 0);
-        cam.lookAt(0, 0, 0);
-        cam.near = .1F;
+        cam.lookAt(1, 0, 1);
+        cam.near = .01F;
         cam.far = 10000F;
 
-        control = new CameraInputController(cam);
+        control = new CamController(cam);
 
         //        environment = new Environment();
         //        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         //        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0f, -1f, 0f));
 
         // world coords are some sorta banana units very close to kilometers
-        ElevConfig elevCfg = new ElevConfig(1, 1, 3601, 3601,
-                                            1110, -787F, 0.01F);
+        elevCfg = new ElevConfig(1, 1, 3601, 3601,
+                                 11100, 7800F, 0.1F);
+        //                                 1110, 787F, 0.01F);
 
         log("Elev " + elevCfg.toString());
 
         LandscapeLoader loader = new LandscapeLoader(Gdx.files, elevCfg);
 
-        Vector3 me = new Vector3(14.2834500F * elevCfg.scalerLon,
-                                 1100 * elevCfg.scalerElev,
-                                 48.8649861F * elevCfg.scalerLat);
+        Vector3 meReal = new Vector3(14.2834500F, 48.8649861F, 1100);
 
         ModelData landscapeModelData = loader.loadModelData(14.26F, 48.84F,
                                                             0.05F, 0.05F);
@@ -81,6 +88,15 @@ public class MyGdxGame extends ApplicationAdapter {
         //            landscapeVertComponents += attr.numComponents;
         //        }
         log("Landscape vertComponents: " + landscapeVertComponents);
+
+        ElevationResolution elevResolution =
+                new ElevationResolution(landscapeMesh.vertices, landscapeTris.indices, landscapeVertComponents, elevCfg);
+        // + 2 because that is the ~ height of human above the terrain
+        float meElev = elevResolution.projectToLandscape(meReal.x, meReal.y) + 2;
+        log("My elevation: " + meElev);
+        Vector3 meWorld = new Vector3(meReal.x * elevCfg.scalerLon,
+                                      meReal.y * elevCfg.scalerLat,
+                                      meElev * elevCfg.scalerElev);
 
         TextureAtlas featuresAtlas = new TextureAtlas(Gdx.files.internal("features.atlas"));
         //        AtlasRegion region = atlas.findRegion("imagename");
@@ -96,16 +112,23 @@ public class MyGdxGame extends ApplicationAdapter {
         ui = new UI(Gdx.files);
         ui.create(skin);
 
-        LandscapeProjection worldProject =
-                new LandscapeProjection(cam,
-                                        landscapeMesh.vertices,
-                                        landscapeTris.indices,
-                                        landscapeVertComponents);
+        //        LandscapeProjection worldProject =
+        //                new LandscapeProjection(cam,
+        //                                        landscapeMesh.vertices,
+        //                                        landscapeTris.indices,
+        //                                        landscapeVertComponents);
 
         Vector3 kletPos = new Vector3(14.2834500F * elevCfg.scalerLon,
-                                      1084 * elevCfg.scalerElev,
-                                      48.8649861F * elevCfg.scalerLat);
-        featuresDisplay = new FeaturesDisplay(asList(new Feature("Klet", kletPos)), me,
+                                      48.8649861F * elevCfg.scalerLat,
+                                      1084 * elevCfg.scalerElev);
+        featuresDisplay = new FeaturesDisplay(asList(new Feature("Klet", kletPos),
+                                                     new Feature("Bily Kamen", toWorld(14.2940883F, 48.8532056F, 931F)),
+                                                     new Feature("Ohrada", toWorld(14.2736606F, 48.8518642F, 886F)),
+                                                     new Feature("U Piskovny", toWorld(14.2697553F, 48.8685222F, 1006F)),
+                                                     new Feature("Nad Javorem", toWorld(14.2882947F, 48.8773289F, 864)),
+                                                     new Feature("Na Rovine", toWorld(14.2646483F, 48.8788250F, 984))
+                                              ),
+                                              meWorld,
                                               featuresAtlas, skin, cam);
 
         Model landscapeModel = new Model(landscapeModelData);
@@ -115,12 +138,12 @@ public class MyGdxGame extends ApplicationAdapter {
         Material matY = new Material(ColorAttribute.createDiffuse(Color.GREEN));
         Material matZ = new Material(ColorAttribute.createDiffuse(Color.BLUE));
 
-        ModelInstance ball = new ModelInstance(builder.createBox(0.1F, 0.1F, 0.1F, matX, 1));
-        ball.transform.trn(kletPos);
-        instances.add(ball);
+        //        ModelInstance ball = new ModelInstance(builder.createBox(0.1F, 0.1F, 0.1F, matX, 1));
+        //        ball.transform.trn(kletPos);
+        //        instances.add(ball);
 
-        addPoint(new Vector3(1582.8519F, 0, -5426.732F), Color.BROWN);
-        addPoint(new Vector3(1588.3696F, 0, -5421.2144F), Color.CYAN);
+        //        addPoint(new Vector3(1582.8519F, 0, -5426.732F), Color.BROWN);
+        //        addPoint(new Vector3(1588.3696F, 0, -5421.2144F), Color.CYAN);
         //        addPoint(new Vector3(MAX_VALUE, 0, MAX_VALUE), Color.);
 
         //
@@ -131,18 +154,18 @@ public class MyGdxGame extends ApplicationAdapter {
         //                                                                      matY, 1));
         //        instances.add(rayLine);
 
-        float minX = MAX_VALUE, maxX = MIN_VALUE, minY = MAX_VALUE, maxY = MIN_VALUE;
-
-        for (int i = 0; i < landscapeMesh.vertices.length / landscapeVertComponents; i++) {
-            float x = landscapeMesh.vertices[landscapeVertComponents * i];
-            float y = landscapeMesh.vertices[landscapeVertComponents * i + 2];
-            minX = minX < x ? minX : x;
-            maxX = maxX > x ? maxX : x;
-            minY = minY < y ? minY : y;
-            maxY = maxY > y ? maxY : y;
-        }
-
-        log("minX: %s, maxY: %s, minY: %s, maxY: %s", minX, maxX, minY, maxY);
+        //        float minX = MAX_VALUE, maxX = MIN_VALUE, minY = MAX_VALUE, maxY = MIN_VALUE;
+        //
+        //        for (int i = 0; i < landscapeMesh.vertices.length / landscapeVertComponents; i++) {
+        //            float x = landscapeMesh.vertices[landscapeVertComponents * i];
+        //            float y = landscapeMesh.vertices[landscapeVertComponents * i + 2];
+        //            minX = minX < x ? minX : x;
+        //            maxX = maxX > x ? maxX : x;
+        //            minY = minY < y ? minY : y;
+        //            maxY = maxY > y ? maxY : y;
+        //        }
+        //
+        //        log("minX: %s, maxX: %s, minY: %s, maxY: %s", minX, maxX, minY, maxY);
 
         //        Vector3 DOWN = new Vector3(0, -1, 0);
         //        Vector3 origin = new Vector3(from.x, 0, from.z);
@@ -205,9 +228,9 @@ public class MyGdxGame extends ApplicationAdapter {
         Gdx.input.setInputProcessor(inMux);
 
         float scale = 1;
-        Vector3 trn = new Vector3(-me.x * scale,
-                                  -me.y * scale,
-                                  -me.z * scale);
+        Vector3 trn = new Vector3(-meWorld.x * scale,
+                                  -meWorld.y * scale,
+                                  -meWorld.z * scale);
         System.out.println("trn " + trn);
         for (ModelInstance i : instances) {
             //            i.transform.scale(scale, scale, scale);
@@ -227,6 +250,12 @@ public class MyGdxGame extends ApplicationAdapter {
         //        ModelInstance grid = new ModelInstance(builder.createLineGrid(1000, 1000, 1, 1, matGrid, 1));
         //        instances.add(grid);
 
+    }
+
+    private Vector3 toWorld(float x, float y, float z) {
+        return new Vector3(x * elevCfg.scalerLon,
+                           y * elevCfg.scalerLat,
+                           z * elevCfg.scalerElev);
     }
 
     //    private void doneLoading() {
@@ -349,6 +378,7 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void resize(int width, int height) {
         //        this.viewport.update(width, height);
+        featuresDisplay.resize(width, height);
         ui.resize(width, height);
         super.resize(width, height);
     }

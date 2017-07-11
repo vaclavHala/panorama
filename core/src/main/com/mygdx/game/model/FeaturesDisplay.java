@@ -23,6 +23,11 @@ public class FeaturesDisplay {
         }
     }
 
+    public void resize(int width, int height) {
+        // See below for what true means.
+        stage.getViewport().update(width, height, true);
+    }
+
     public void render() {
         this.stage.act();
         this.stage.draw();

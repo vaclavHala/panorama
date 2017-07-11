@@ -221,8 +221,8 @@ public class LandscapeLoader {
 
                 int v = (short) (row * cellsHorizontal + col);
                 vertices[v * vComponents] = lon;
-                vertices[v * vComponents + 1] = elev;
-                vertices[v * vComponents + 2] = lat;
+                vertices[v * vComponents + 1] = lat;
+                vertices[v * vComponents + 2] = elev;
                 if (row > 0 && col > 0) { // nothing to triangulate on first row/col
                     triIndices[t * 3] = (short) v;
                     triIndices[t * 3 + 1] = (short) (v - cellsHorizontal - 1);
@@ -236,7 +236,7 @@ public class LandscapeLoader {
             }
         }
 
-        colorize(vertices, vertCount, 3 + 1, 1, 3);
+        colorize(vertices, vertCount, 3 + 1, 2, 3);
         //        Gdx.app.log(TAG, "verts: " + Arrays.toString(vertices) + "\ntris: " + Arrays.toString(triIndices));
 
         ModelMesh mesh = new ModelMesh();
