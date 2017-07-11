@@ -38,8 +38,6 @@ public class FeatureLabel extends Actor {
         this.featureScreenPosition = new Vector2();
     }
 
-    private Vector3 origin;
-
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -50,9 +48,6 @@ public class FeatureLabel extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        //        if (this.featureScreenPosition.y < 0) {
-        //            return; // feature is offscreen
-        //        }
         if (!this.visibility.isVisible()) {
             return; // landscape obscures the feature
         }

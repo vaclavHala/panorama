@@ -3,6 +3,7 @@ package com.mygdx.game.model;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
+import com.mygdx.game.MyGdxGame;
 
 public class IsVisible {
 
@@ -22,7 +23,11 @@ public class IsVisible {
     }
 
     public boolean isVisible() {
-        return isInFieldOfView() && isNotObscured();
+        if (MyGdxGame.allFeaturesVisible) {
+            return true;
+        } else {
+            return isInFieldOfView() && isNotObscured();
+        }
     }
 
     private boolean isInFieldOfView() {

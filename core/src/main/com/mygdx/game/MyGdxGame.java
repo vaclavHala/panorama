@@ -56,6 +56,8 @@ public class MyGdxGame extends ApplicationAdapter {
     ElevConfig elevCfg;
     CoordTransform coordTrans;
 
+    public static boolean allFeaturesVisible = false;
+
     @Override
     public void create() {
         modelBatch = new ModelBatch();
@@ -124,9 +126,11 @@ public class MyGdxGame extends ApplicationAdapter {
         //                                        landscapeTris.indices,
         //                                        landscapeVertComponents);
 
-        FeatureLookup featureLookup = new FeatureLookup(elevResolution);
+        FeatureLookup featureLookup = new FeatureLookup(Gdx.files, elevResolution);
 
-        List<Feature> features = featureLookup.lookup(1, 1, 1, 1);
+        // put enough margin around edges to avoid features not above landscape
+        List<Feature> features = featureLookup.lookup(14.26F + 0.0005F, 48.84F + 0.0005F,
+                                                      0.05F - 0.001F, 0.05F - 0.001F);
         featuresDisplay = new FeaturesDisplay(features,
                                               featuresAtlas, skin, cam,
                                               coordTrans, visibility);
@@ -271,6 +275,8 @@ public class MyGdxGame extends ApplicationAdapter {
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.A) {
                 anchor.set(cam.position);
+            } else if (keycode == Input.Keys.F) {
+                allFeaturesVisible = !allFeaturesVisible;
             }
             return false;
         }
