@@ -1,6 +1,5 @@
 package com.mygdx.game.model;
 
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,12 +12,7 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
 import com.mygdx.game.ElevConfig;
 import com.mygdx.game.common.CoordTransform;
-import com.mygdx.game.model.colorization.ColorModel;
-import com.mygdx.game.model.colorization.SolidColorModel;
-import static java.lang.Math.min;
 import static java.lang.String.format;
-import java.util.Arrays;
-import static java.util.Arrays.asList;
 
 /**
  * Gutted {@link com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader} which
@@ -28,50 +22,18 @@ public class LandscapeLoader {
 
     private static final String TAG = Convertor.class.getSimpleName();
 
-    //    private static final double TOTAL_WIDTH_DEG = 2;
-    //    private static final double TOTAL_HEIGHT_DEG = 2;
-    //
     private static final String MODEL_ID = "model";
     private static final String MATERIAL_ID = "material";
     private static final String NODE_ID = "node";
     private static final String NODE_CHILD_ID = "node_child";
     private static final String PART_ID = "part";
-    //
-    //    private static final int[] VERSION = new int[]{0, 1};
-    //
-    //    private static final G3DJTemplate.G3DJMaterial MATERIAL;
-    //    private static final G3DJTemplate.G3DJNode NODE;
-    //    private static final G3DJTemplate.G3DJAnimation ANIMATION;
-    //
-    //    static {
-    //        MATERIAL = new G3DJTemplate.G3DJMaterial();
-    //        MATERIAL.id = MATERIAL_ID;
-    //        MATERIAL.ambient = new float[]{0.5f, 0.5f, 0.5f};
-    //        MATERIAL.diffuse = new float[]{1f, 1f, 1f};
-    //        MATERIAL.emissive = new float[]{0.5f, 0.5f, 0.5f};
-    //        MATERIAL.opacity = 1;
-    //        MATERIAL.specular = new float[]{0f, 0f, 0f};
-    //        MATERIAL.shininess = 0;
-    //
-    //        NODE = new G3DJTemplate.G3DJNode();
-    //        NODE.id = NODE_ID;
-    //        G3DJTemplate.G3DJNodeChild nodeChild = new G3DJTemplate.G3DJNodeChild();
-    //        nodeChild.id = NODE_CHILD_ID;
-    //        G3DJTemplate.G3DJNodeChildPart nodeChildPart = new G3DJTemplate.G3DJNodeChildPart();
-    //        nodeChildPart.meshpartid = PART_ID;
-    //        nodeChildPart.materialid = MATERIAL_ID;
-    //        nodeChild.parts = asList(nodeChildPart);
-    //        NODE.children = asList(nodeChild);
-    //
-    //        ANIMATION = new G3DJTemplate.G3DJAnimation();
-    //    }
 
-    private final Files files;
+    private final ElevDataFactory factory;
     private final ElevConfig elevCfg;
     private final CoordTransform coordTrans;
 
-    public LandscapeLoader(Files files, ElevConfig elevCfg, CoordTransform coordTrans) {
-        this.files = files;
+    public LandscapeLoader(ElevDataFactory factory, ElevConfig elevCfg, CoordTransform coordTrans) {
+        this.factory = factory;
         this.elevCfg = elevCfg;
         this.coordTrans = coordTrans;
     }
@@ -96,37 +58,6 @@ public class LandscapeLoader {
         return model;
 
     }
-
-    //    private void colorize(Landscape input, float centerX, float centerY, ElevConfig elevCfg) {
-    //        float minHeight = Float.MAX_VALUE;
-    //        float maxHeight = Float.MIN_VALUE;
-    //        for (int y = 0; y < input.heightCells; y++) {
-    //            for (int x = 0; x < input.widthCells; x++) {
-    //                minHeight = Math.min(minHeight, input.getY(x, y));
-    //                maxHeight = Math.max(maxHeight, input.getY(x, y));
-    //            }
-    //        }
-    //
-    //        float widthDeg = input.widthCells / (float) elevCfg.cellsPerDegHorizontal;
-    //        float heightDeg = input.heightCells / (float) elevCfg.cellsPerDegVertical;
-    //        float radius = Math.min(widthDeg, heightDeg) / 2.0f;
-    //
-    //        //        ColorModel colors = new MaskedColorModel(
-    //        //                new HeightColorModel(0.9f * minHeight, 0.9f * maxHeight),
-    //        //                new SolidColorModel(Color.BLACK),
-    //        //                new CenterDistanceWeight(0.3f * radius, 0.9f * radius,
-    //        //                        new Vector2(centerX, centerY)));
-    //        ColorModel colors = new SolidColorModel(Color.RED);
-    //        // has to be in separate loop from the one above,
-    //        // we first need to go through all points to find min/max heights
-    //        // only then can we color the points based on that
-    //        for (short y = 0; y < input.heightCells; y++) {
-    //            for (short x = 0; x < input.widthCells; x++) {
-    //                Color rawColor = colors.color(input.getX(x, y), input.getY(x, y), input.getZ(x, y));
-    //                input.setC(x, y, rawColor.toFloatBits());
-    //            }
-    //        }
-    //    }
 
     private void addMesh(ModelData model,
             float lonFrom, float latFrom,
@@ -157,6 +88,9 @@ public class LandscapeLoader {
         int cell0Col = (int) ((lonFrom - chunk0Lon) * elevCfg.cellsPerDegHorizontal);
         int cell0Row = (int) ((latFrom - chunk0Lat) * elevCfg.cellsPerDegVertical);
 
+        float cell0Lon = (float) (chunk0Lon + cell0Col * elevCfg.cellWidthDeg);
+        float cell0Lat = (float) (chunk0Lat + cell0Row * elevCfg.cellHeightDeg);
+
         int cellNCol = (int) ((lonTo - chunk0Lon) * elevCfg.cellsPerDegHorizontal);
         int cellNRow = (int) ((latTo - chunk0Lat) * elevCfg.cellsPerDegVertical);
 
@@ -179,6 +113,8 @@ public class LandscapeLoader {
                          "chunksVertical=" + chunksVertical + "\n" +
                          "cell0Col=" + cell0Col + ", " +
                          "cell0Row=" + cell0Row + ", " +
+                         "cell0Lon=" + cell0Lon + ", " +
+                         "cell0Lat=" + cell0Lat + ", " +
                          "cellNCol=" + cellNCol + ", " +
                          "cellNRow=" + cellNRow + "\n" +
                          "cellsHorizontal=" + cellsHorizontal + ", " +
@@ -187,7 +123,7 @@ public class LandscapeLoader {
                          "triCount=" + triCount
                );
 
-        FileBackedElevData[] chunks = new FileBackedElevData[chunksHorizontal * chunksVertical];
+        ElevData[] chunks = new ElevData[chunksHorizontal * chunksVertical];
         for (int row = 0; row < chunksVertical; row++) {
             for (int col = 0; col < chunksHorizontal; col++) {
                 int i = row * chunksHorizontal + col;
@@ -197,7 +133,9 @@ public class LandscapeLoader {
                                           chunkLon < 0 ? 'w' : 'e', Math.abs(chunkLon),
                                           chunkLat < 0 ? 's' : 'n', Math.abs(chunkLat));
                 Gdx.app.log(TAG, "[r" + row + ",c" + col + "] Opening chunk " + chunkName);
-                chunks[i] = new FileBackedElevData(this.files, "chunks/" + chunkName);
+                chunks[i] = this.factory.chunk("chunks/" + chunkName);
+                //                        new CoarseElevData(new FileBackedElevData(this.files, ),
+                //                                               detail, 3601, 3601);
             }
         }
 
@@ -211,8 +149,6 @@ public class LandscapeLoader {
                                                cell0Row, cell0Col,
                                                cellNRow, cellNCol);
 
-        float cell0Lon = chunk0Lon + cell0Col * elevCfg.cellWidthDeg;
-        float cell0Lat = chunk0Lat + cell0Row * elevCfg.cellHeightDeg;
         int t = 0;
         for (int row = 0; row < cellsVertical; row++) {
             for (int col = 0; col < cellsHorizontal; col++) {
@@ -252,7 +188,8 @@ public class LandscapeLoader {
         mesh.vertices = vertices;
         ModelMeshPart trianglesPart = new ModelMeshPart();
         trianglesPart.id = PART_ID;
-        trianglesPart.primitiveType = GL20.GL_TRIANGLES;
+        trianglesPart.primitiveType = GL20.GL_LINES;
+        //        trianglesPart.primitiveType = GL20.GL_TRIANGLES;
         trianglesPart.indices = triIndices;
         mesh.parts = new ModelMeshPart[]{trianglesPart};
         model.meshes.add(mesh);
@@ -261,7 +198,7 @@ public class LandscapeLoader {
     private void colorize(float[] vertices, int vertCount,
             int vComponents, int elevIndex, int colorIndex) {
         float minElev = Float.MAX_VALUE;
-        float maxElev = Float.MIN_VALUE;
+        float maxElev = -Float.MAX_VALUE;
         for (int i = 0; i < vertCount; i++) {
             float elev = vertices[i * vComponents + elevIndex];
             minElev = minElev < elev ? minElev : elev;
@@ -305,6 +242,11 @@ public class LandscapeLoader {
 
     public static void log(String format, Object... args) {
         Gdx.app.log(TAG, String.format(format, args));
+    }
+
+    public interface ElevDataFactory {
+
+        ElevData chunk(String chunkName);
     }
 
 }

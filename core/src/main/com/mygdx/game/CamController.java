@@ -32,7 +32,7 @@ public class CamController extends GestureDetector {
     /** Whether scrolling requires the activeKey to be pressed (false) or always allow scrolling (true). */
     public boolean alwaysScroll = true;
     /** The weight for each scrolled amount. */
-    public float scrollFactor = -1f;
+    public float scrollFactor = -.2f;
     /** World units per screen size */
     public float pinchZoomFactor = 10f;
     /** Whether to update the camera after it has been changed. */

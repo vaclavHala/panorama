@@ -1,7 +1,6 @@
 package com.mygdx.game.common;
 
 import com.badlogic.gdx.math.Vector3;
-import com.mygdx.game.ElevConfig;
 
 public class CoordTransform {
 
@@ -13,10 +12,11 @@ public class CoordTransform {
     private final float scalerLat;
     private final float scalerElev;
 
-    public CoordTransform(ElevConfig elevCfg, Vector3 userPosition) {
-        this.scalerLon = elevCfg.scalerLon;
-        this.scalerLat = elevCfg.scalerLat;
-        this.scalerElev = elevCfg.scalerElev;
+    public CoordTransform(float scalerLon, float scalerLat, float scalerElev,
+            Vector3 userPosition) {
+        this.scalerLon = scalerLon;
+        this.scalerLat = scalerLat;
+        this.scalerElev = scalerElev;
 
         this.offsetLon = userPosition.x * scalerLon;
         this.offsetLat = userPosition.y * scalerLat;
