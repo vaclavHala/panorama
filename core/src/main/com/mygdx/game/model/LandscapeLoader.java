@@ -188,7 +188,7 @@ public class LandscapeLoader {
         mesh.vertices = vertices;
         ModelMeshPart trianglesPart = new ModelMeshPart();
         trianglesPart.id = PART_ID;
-        trianglesPart.primitiveType = GL20.GL_LINES;
+        trianglesPart.primitiveType = GL20.GL_TRIANGLES;
         //        trianglesPart.primitiveType = GL20.GL_TRIANGLES;
         trianglesPart.indices = triIndices;
         mesh.parts = new ModelMeshPart[]{trianglesPart};

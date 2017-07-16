@@ -58,4 +58,16 @@ public class CoordTransform {
         return (elev + offsetElev) / scalerElev;
     }
 
+    @Override
+    public String toString() {
+        return "CoordTransform{" +
+               "offsetLon=" + offsetLon +
+               ", offsetLat=" + offsetLat +
+               ", offsetElev=" + offsetElev +
+               ", scalerLon=" + scalerLon +
+               ", scalerLat=" + scalerLat +
+               ", scalerElev=" + scalerElev +
+               '}';
+    }
+
 }

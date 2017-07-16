@@ -13,7 +13,7 @@ public class WorldToScreenProjection {
     }
 
     /**
-     * Returns coordinates on screen of point given in world banana units (real world unit * elevCfg scaler)
+     * Returns coordinates on screen of point given in internal units
      */
     Vector2 toScreen(Vector3 worldPosition) {
         Vector3 tmp = worldPosition.cpy();
