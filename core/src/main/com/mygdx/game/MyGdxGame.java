@@ -12,16 +12,19 @@ import static com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.createDiff
 import com.badlogic.gdx.graphics.g3d.model.data.*;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
-import com.mygdx.game.camera.CameraService;
 import com.mygdx.game.common.CoordTransform;
 import com.mygdx.game.model.*;
 import com.mygdx.game.model.HardwiredFeatureLookup.RawFeature;
+import com.mygdx.game.service.DeviceCameraControl;
+import com.mygdx.game.ui.NewPanoramaPane;
 import com.mygdx.game.ui.UI;
+import static java.lang.String.format;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,20 +44,27 @@ import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter {
 
-    final CameraService camService;
+    final DeviceCameraControl camService;
 
     PerspectiveCamera cam;
+    PerspectiveCamera compassCam;
+    List<ModelInstance> compassModel;
+    FrameBuffer compassFbo;
+
     CamController control;
+
+    NewPanoramaPane resources;
 
     Array<ModelInstance> instances = new Array<ModelInstance>();
     ModelBatch modelBatch;
+    Stage uiStage;
     UI ui;
-    PhotoDisplay photoDisplay;
     FeaturesDisplay featuresDisplay;
 
     Skin skin;
 
     ModelBuilder builder = new ModelBuilder();
+    SpriteBatch batch;
 
     //    ElevConfig elevCfg;
     CoordTransform coordTrans;
@@ -64,7 +74,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
     public static boolean allFeaturesVisible = false;
 
-    public MyGdxGame(CameraService camService) {
+    public MyGdxGame(DeviceCameraControl camService) {
         this.camService = camService;
     }
 
@@ -80,13 +90,14 @@ public class MyGdxGame extends ApplicationAdapter {
 
     @Override
     public void create() {
-        camService.create();
+        batch = new SpriteBatch();
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        createCamera();
+        camService.on();
 
+        createCamera();
         modelBatch = new ModelBatch();
 
         ElevConfig elevCfg = new ElevConfig(1, 1, 3601, 3601, 3601, 3601);
@@ -100,8 +111,8 @@ public class MyGdxGame extends ApplicationAdapter {
         coordTrans = new CoordTransform(metersToBanana(111000F), metersToBanana(111000F), metersToBanana(1F), meReal);
         log("COORD transform: " + coordTrans);
 
-        LandscapeLoader loader1 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, Gdx.files, 1), elevCfg1, coordTrans);
-        LandscapeLoader loader10 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, Gdx.files, 10), elevCfg10, coordTrans);
+        LandscapeLoader loader1 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, 1), elevCfg1, coordTrans);
+        LandscapeLoader loader10 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, 10), elevCfg10, coordTrans);
 
         float sizeDeg = 0.05F;
         ModelData landscapeModelData1 = loader1.loadModelData(meReal.x - sizeDeg / 2.0F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
@@ -118,15 +129,28 @@ public class MyGdxGame extends ApplicationAdapter {
         System.out.println("Got landscape model");
         landscapeInfo(landscapeModelData1);
         landscapeInfo(landscapeModelData10);
-        //        Model landscapeModel1 = new Model(landscapeModelData1);
+        Model landscapeModel1 = new Model(landscapeModelData1);
         Model landscapeModel10 = new Model(landscapeModelData10);
         //        landscapeModel1.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         //        landscapeModel1.materials.get(0).set(FloatAttribute.createAlphaTest(0.1f));
         //        landscapeModel10.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-        //        landscape1 = new ModelInstance(landscapeModel1);
-        landscape10 = new ModelInstance(landscapeModel10);
-        //        instances.add(landscape1);
-        instances.add(landscape10);
+        landscape1 = new ModelInstance(landscapeModel1);
+        //        landscape10 = new ModelInstance(landscapeModel10);
+        instances.add(landscape1);
+        //        instances.add(landscape10);
+
+        compassFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+        //        testIntersect();
+        compassModel = new ArrayList<ModelInstance>();
+        compassModel.add(new ModelInstance(builder.createArrow(0, 0, 0, 0, -1, 0, 0.2F, -0.5F, 8, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.RED)), 1)));
+        compassModel.add(new ModelInstance(builder.createArrow(0, 0, 0, 1, 0, 0, 0.2F, -0.5F, 8, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.GREEN)), 1)));
+        compassModel.add(new ModelInstance(builder.createArrow(0, 0, 0, 0, 0, 1, 0.2F, -0.5F, 8, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.BLUE)), 1)));
+
+        pix = new Pixmap(100, 100, Pixmap.Format.RGBA8888);
+        pix.setColor(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.5F);
+        pix.fillRectangle(0, 0, 100, 100);
+        tex = new Texture(pix);
 
         //        instances.add(new ModelInstance(new Model(loader1.loadModelData(meReal.x - sizeDeg / 2.0F + sizeDeg * 0.99F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg))));
         //        instances.add(new ModelInstance(new Model(loader1.loadModelData(meReal.x - sizeDeg / 2.0F - sizeDeg * 0.99F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg))));
@@ -161,6 +185,11 @@ public class MyGdxGame extends ApplicationAdapter {
         control.target.set(cam.position);
         cam.update();
 
+        compassCam = new PerspectiveCamera(50, 100, 100);
+        compassCam.position.set(0, 0, 2);
+        compassCam.lookAt(0, 0, 0);
+        compassCam.update();
+
         //        addLine(new Vector3(0, 0, cam.position.z),
         //                new Vector3(0, 0, 0),
         //                Color.YELLOW);
@@ -177,39 +206,18 @@ public class MyGdxGame extends ApplicationAdapter {
 
         Visibility visibility = new Visibility(landscapeMesh.vertices, landscapeTris.indices, landscapeVertComponents);
 
-        TextureAtlas uiAtlas = new TextureAtlas(Gdx.files.internal("uiskin.atlas"), Gdx.files.internal(""));
-        skin = new Skin();
-        skin.addRegions(uiAtlas);
-        skin.add("font", new BitmapFont(Gdx.files.internal("default.fnt"), Gdx.files.internal("default.png"), false));
-        skin.add("default", new Label.LabelStyle(skin.getFont("font"), Color.BLACK));
+        skin = PanoramaSkin.load();
 
+        uiStage = new Stage();
         ui = new UI(Gdx.files);
         ui.create(skin);
 
         createFeatures(elevResolution, visibility, meReal, sizeDeg);
 
-        InputMultiplexer inMux = new InputMultiplexer(debugInput, ui.input(), control);
+        //        resources = new NewPanoramaPane(skin);
+        InputMultiplexer inMux = new InputMultiplexer(debugInput, resources.debugInput, uiStage, control);
         Gdx.input.setInputProcessor(inMux);
 
-    }
-
-    private static class CoarsedElevDataFactory implements LandscapeLoader.ElevDataFactory {
-
-        private final ElevConfig elevCfg;
-        private final Files files;
-        private final int detail;
-
-        public CoarsedElevDataFactory(ElevConfig elevCfg, Files files, int detail) {
-            this.elevCfg = elevCfg;
-            this.files = files;
-            this.detail = detail;
-        }
-
-        @Override
-        public ElevData chunk(String chunkName) {
-            return new CoarseElevData(new FileBackedElevData(files, chunkName), detail,
-                                      elevCfg.chunkWidthCells, elevCfg.chunkHeightCells);
-        }
     }
 
     private void createCamera() {
@@ -250,7 +258,7 @@ public class MyGdxGame extends ApplicationAdapter {
         featuresDisplay = new FeaturesDisplay(features,
                                               featuresAtlas, skin, cam,
                                               coordTrans, visibility);
-        photoDisplay = new PhotoDisplay(camService.cameraView());
+        //        photoDisplay = new PhotoDisplay(camService.cameraView());
 
         //        builder.begin();
         //        {
@@ -302,8 +310,6 @@ public class MyGdxGame extends ApplicationAdapter {
                 anchor.set(cam.position);
             } else if (keycode == Input.Keys.F) {
                 allFeaturesVisible = !allFeaturesVisible;
-            } else if (keycode == Input.Keys.P) {
-                photoDisplay.show = !photoDisplay.show;
             } else if (keycode == Input.Keys.NUM_1) {
                 landscape1.transform.setToScaling(1, 1, 1);
                 landscape10.transform.setToScaling(0, 0, 0);
@@ -323,83 +329,6 @@ public class MyGdxGame extends ApplicationAdapter {
     };
 
     List<ModelInstance> featureRays = new ArrayList<ModelInstance>();
-
-    //    private void doneLoading() {
-    //        Model ship = assets.get("gen.g3dj", Model.class);
-    //        ModelInstance shipInstance = new ModelInstance(ship);
-    //        instances.add(shipInstance);
-    //        loading = false;
-
-    //    }
-
-    //    void testIntersect() {
-    //        float[] verts = {0, 0, 0,
-    //                         1, 0.5F, 0,
-    //                         1, 0, 1,
-    //                         0, 0.5F, 1};
-    //        short[] tris = {0, 1, 2,
-    //                        0, 2, 3};
-    //
-    //        String MODEL_ID = "model";
-    //        String MATERIAL_ID = "material";
-    //        String NODE_ID = "node";
-    //        String NODE_CHILD_ID = "node_child";
-    //        String PART_ID = "part";
-    //
-    //        ModelData model = new ModelData();
-    //        model.version[0] = 0;
-    //        model.version[1] = 1;
-    //        model.id = MODEL_ID;
-    //
-    //        ModelMesh mesh = new ModelMesh();
-    //        //mesh.id = PART_ID;
-    //
-    //        mesh.attributes = new VertexAttribute[]{VertexAttribute.Position()};
-    //
-    //        mesh.vertices = verts;
-    //        ModelMeshPart trianglesPart = new ModelMeshPart();
-    //        trianglesPart.id = PART_ID;
-    //        trianglesPart.primitiveType = GL20.GL_TRIANGLES;
-    //        trianglesPart.indices = tris;
-    //        mesh.parts = new ModelMeshPart[]{trianglesPart};
-    //        model.meshes.add(mesh);
-    //
-    //        ModelMaterial material = new ModelMaterial();
-    //        material.id = MATERIAL_ID;
-    //
-    //        material.diffuse = new Color(1f, 1f, 1f, 1.0f);
-    //        material.ambient = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-    //        material.emissive = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-    //        material.specular = new Color(0f, 0f, 0f, 1.0f);
-    //        material.shininess = 0.0f;
-    //        material.opacity = 1.0f;
-    //        model.materials.add(material);
-    //
-    //        ModelNode node = new ModelNode();
-    //        node.id = NODE_ID;
-    //        ModelNodePart nodePart = new ModelNodePart();
-    //
-    //        nodePart.materialId = MATERIAL_ID;
-    //        nodePart.meshPartId = PART_ID;
-    //        node.parts = new ModelNodePart[]{nodePart};
-    //
-    //        model.nodes.add(node);
-    //
-    //        ModelInstance instance = new ModelInstance(new Model(model));
-    //
-    //        ModelBuilder builder = new ModelBuilder();
-    //        Model box = builder.createBox(0.1F, 0.1F, 0.1F, new Material(ColorAttribute.createDiffuse(Color.RED)), 1);
-    //        ModelInstance boxInstance = new ModelInstance(box);
-    //
-    //        ElevationResolution res = new ElevationResolution(verts, tris, 3);
-    //
-    //        float elev = res.projectToLandscape(new Vector2(.4F, .8F));
-    //        boxInstance.transform.setTranslation(.4F, elev, .8F);
-    //
-    //        this.instances.clear();
-    //        this.instances.add(instance);
-    //        this.instances.add(boxInstance);
-    //    }
 
     private void landscapeInfo(ModelData landscapeData) {
         ModelMesh landscapeMesh = landscapeData.meshes.first();
@@ -455,12 +384,29 @@ public class MyGdxGame extends ApplicationAdapter {
         cam.update();
 
         featuresDisplay.resize(width, height);
-        photoDisplay.resize(width, height);
+        //        photoDisplay.resize(width, height);
         ui.resize(width, height);
+
+        uiStage.getViewport().update(width, height, true);
     }
+
+    Pixmap pix;
+    Texture tex;
 
     @Override
     public void render() {
+
+        cam.view.getRotation(cam.view.getRotation(q));
+        for (ModelInstance m : compassModel) {
+            m.transform.setFromEulerAnglesRad(-q.getYawRad(), -q.getPitchRad(), -q.getRollRad());
+        }
+
+        compassFbo.begin();
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        modelBatch.begin(compassCam);
+        modelBatch.render(compassModel);
+        modelBatch.end();
+        compassFbo.end();
 
         for (ModelInstance ray : this.featureRays) {
             Vector3 pos = anchor.cpy();
@@ -478,14 +424,18 @@ public class MyGdxGame extends ApplicationAdapter {
         modelBatch.render(this.instances);
         modelBatch.end();
 
-        //        System.out.format("x:%f y:%f z:%f\n",cam.direction.x, cam.direction.y, cam.direction.z);
-
-        photoDisplay.render();
-
         featuresDisplay.render();
         ui.render(Gdx.graphics.getDeltaTime(), camTmp.set(cam.direction.x, cam.direction.y).angle(south) + 180);
+
+        batch.begin();
+        batch.draw(tex, 100, 100, 100, 100);
+        batch.draw(compassFbo.getColorBufferTexture(), 100, 100, 100, 100);
+        skin.getFont("font").draw(batch, format("y: %10f, p: %10f, r: %10f", q.getYaw(), q.getPitch(), q.getRoll()), 100, 70);
+        batch.end();
+        uiStage.draw();
     }
 
+    Quaternion q = new Quaternion();
     Vector2 south = new Vector2(0, -1);
     Vector2 camTmp = new Vector2();
 

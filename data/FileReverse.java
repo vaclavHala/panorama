@@ -23,8 +23,15 @@ public class FileReverse {
         String in = "/home/hala/Documents/toy/panorama/data/1arc/" + lat + "_" + lon + "_1arc_v3.bil";
         String out = "/home/hala/Documents/toy/panorama/android/assets/chunks/chunk_" + lon + "_" + lat;
 
-        InputStream is = new BufferedInputStream(new FileInputStream(Paths.get(in).toFile()));
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(Paths.get(out).toFile()));
+        reverse(in, out);
+
+        System.out.println("chunk ready: " + out);
+    }
+
+    public static void reverse(String bilFile, String outFile) throws IOException {
+
+        InputStream is = new BufferedInputStream(new FileInputStream(Paths.get(bilFile).toFile()));
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(Paths.get(outFile).toFile()));
 
         byte[][] buffs = new byte[3601][];
         for (int row = 0; row < buffs.length; row++) {
@@ -35,8 +42,6 @@ public class FileReverse {
             os.write(buffs[row]);
         }
         os.close();
-        System.out.println("chunk ready: " + out);
-
     }
 
     private static byte[] fillBuffer(int size, InputStream is) throws IOException {

@@ -22,9 +22,6 @@ public class FeaturesDisplay {
             TextureAtlas atlas, Skin skin, Camera cam,
             CoordTransform coordTrans, Visibility visibility) {
 
-        Texture t;
-        Pixmap p;
-
         this.stage = new Stage(new StretchViewport(1024, 480));
         WorldToScreenProjection projection = new WorldToScreenProjection(cam);
         for (Feature feature : features) {

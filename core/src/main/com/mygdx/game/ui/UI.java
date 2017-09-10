@@ -88,10 +88,10 @@ public class UI implements Disposable {
     //    public float labelY;
 
     public void render(float delta, double camRot) {
-        /*  ui.act(delta);
-          //        label.setPosition(labelX, labelY);
-          compas.update(camRot);
-          ui.draw();*/
+        ui.act(delta);
+        //        label.setPosition(labelX, labelY);
+        compas.update(camRot);
+        ui.draw();
     }
 
     @Override
