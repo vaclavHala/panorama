@@ -9,8 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.mygdx.game.Chunks;
+import com.mygdx.game.ChunksService;
 import com.mygdx.game.PanoramaSkin;
+import com.mygdx.game.model.Chunk;
 import com.mygdx.game.ui.NewPanoramaPane;
 import com.mygdx.game.ui.PopMenu;
 import com.mygdx.game.ui.ResourcesPane;
@@ -23,14 +24,14 @@ import java.util.concurrent.Executors;
 
 public class DemoChunkDownload extends ApplicationAdapter {
 
-    Chunks chunks;
+    ChunksService chunks;
 
     @Override
     public void create() {
         System.out.println("CREATE");
 
         Executor netPool = Executors.newFixedThreadPool(4);
-        chunks = new Chunks(netPool);
+        chunks = new ChunksService(netPool);
 
         Gdx.input.setInputProcessor(debugInput);
     }
@@ -43,7 +44,7 @@ public class DemoChunkDownload extends ApplicationAdapter {
             if (keycode == Input.Keys.E) {
                 chunks.fetchAvailableChunks();
             } else if (keycode == Input.Keys.D) {
-                chunks.downloadChunk(14, 48);
+                chunks.downloadChunk(new Chunk(14, 48));
             }
 
             return false;

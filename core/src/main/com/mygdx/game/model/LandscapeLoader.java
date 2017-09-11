@@ -11,8 +11,12 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
 import com.mygdx.game.ElevConfig;
+import com.mygdx.game.Terraformer.MissingChunksException;
 import com.mygdx.game.common.CoordTransform;
+import java.io.FileNotFoundException;
 import static java.lang.String.format;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Gutted {@link com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader} which
@@ -40,7 +44,7 @@ public class LandscapeLoader {
 
     public ModelData loadModelData(
             float lon, float lat,
-            float width, float height) {
+            float width, float height) throws MissingChunksException {
         Gdx.app.log(TAG, "Loading landscape. Deg:" +
                          " lon=" + lon + ", lat=" + lat +
                          ", width=" + width + ", height=" + height);
@@ -61,7 +65,7 @@ public class LandscapeLoader {
 
     private void addMesh(ModelData model,
             float lonFrom, float latFrom,
-            float width, float height) {
+            float width, float height) throws MissingChunksException {
 
         int vComponents = 3 + 1;
 
@@ -124,19 +128,26 @@ public class LandscapeLoader {
                );
 
         ElevData[] chunks = new ElevData[chunksHorizontal * chunksVertical];
+        List<Chunk> missingChunks = new ArrayList<Chunk>();
         for (int row = 0; row < chunksVertical; row++) {
             for (int col = 0; col < chunksHorizontal; col++) {
                 int i = row * chunksHorizontal + col;
                 int chunkLon = chunk0Lon + col * elevCfg.chunkWidthDeg;
                 int chunkLat = chunk0Lat + row * elevCfg.chunkHeightDeg;
-                String chunkName = format("chunk_%c%d_%c%d",
-                                          chunkLon < 0 ? 'w' : 'e', Math.abs(chunkLon),
-                                          chunkLat < 0 ? 's' : 'n', Math.abs(chunkLat));
-                Gdx.app.log(TAG, "[r" + row + ",c" + col + "] Opening chunk " + chunkName);
-                chunks[i] = this.factory.chunk("chunks/" + chunkName);
-                //                        new CoarseElevData(new FileBackedElevData(this.files, ),
-                //                                               detail, 3601, 3601);
+                Chunk chunk = new Chunk(chunkLat, chunkLon);
+                Gdx.app.log(TAG, "[r" + row + ",c" + col + "] Opening chunk " + chunk);
+                try {
+
+                    chunks[i] = this.factory.chunk("chunks/" + chunk.name);
+                    //                        new CoarseElevData(new FileBackedElevData(this.files, ),
+                    //                                               detail, 3601, 3601);
+                } catch (FileNotFoundException ex) {
+                    missingChunks.add(chunk);
+                }
             }
+        }
+        if (!missingChunks.isEmpty()) {
+            throw new MissingChunksException(missingChunks);
         }
 
         float[] vertices = new float[vComponents * vertCount];
@@ -246,7 +257,7 @@ public class LandscapeLoader {
 
     public interface ElevDataFactory {
 
-        ElevData chunk(String chunkName);
+        ElevData chunk(String chunkName) throws FileNotFoundException;
     }
 
 }

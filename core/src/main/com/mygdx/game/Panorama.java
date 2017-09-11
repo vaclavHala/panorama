@@ -28,6 +28,7 @@ import com.mygdx.game.service.DebugFeedService.DebugListener;
 import com.mygdx.game.service.LocationServicePush;
 import com.mygdx.game.ui.NewPanoramaPane;
 import com.mygdx.game.ui.ResourcesPane;
+import static java.lang.Thread.currentThread;
 import java.util.ArrayDeque;
 import static java.util.Collections.unmodifiableList;
 import java.util.Deque;
@@ -54,7 +55,7 @@ public class Panorama extends Game implements Conductor, Terraformer {
     private CoordTransform coordTrans;
     private ElevConfig elevCfg;
 
-    private Chunks chunks;
+    private ChunksService chunks;
 
     private Model landscape;
     private List<Feature> features;
@@ -69,6 +70,8 @@ public class Panorama extends Game implements Conductor, Terraformer {
 
     @Override
     public void create() {
+        Asserts.uiThread = Thread.currentThread();
+
         if (!Gdx.files.isExternalStorageAvailable()) {
             // TODO pretty popup
             throw new IllegalStateException("External storage not available");
@@ -77,8 +80,8 @@ public class Panorama extends Game implements Conductor, Terraformer {
         skin = PanoramaSkin.load();
         uiStage = new Stage(new StretchViewport(800, 800 * Gdx.graphics.getHeight() / Gdx.graphics.getWidth()));
         uiStage.setDebugAll(true);
-        chunks = new Chunks(netPool);
-        chunks.fetchAvailableChunks();
+        chunks = new ChunksService(netPool);
+        chunks.start();
 
         if (this.debug != null) {
             this.debugLog = new ArrayDeque<String>();
@@ -127,7 +130,7 @@ public class Panorama extends Game implements Conductor, Terraformer {
         }
         Screen newScreen = null;
         if (screen.equals(ResourcesPane.class)) {
-            newScreen = new ResourcesPane(this, skin, uiStage, chunks);
+            newScreen = new ResourcesPane(this, this, skin, uiStage, chunks);
         } else if (screen.equals(NewPanoramaPane.class)) {
             newScreen = new NewPanoramaPane(this, this, gps, skin, uiStage);
         } else if (screen.equals(PanoramaPane.class)) {
@@ -150,7 +153,7 @@ public class Panorama extends Game implements Conductor, Terraformer {
     }
 
     @Override
-    public void rebuildLandscape(float lon, float lat, ProgressListener progress) {
+    public void rebuildLandscape(float lon, float lat, ProgressListener progress) throws MissingChunksException {
         if (this.landscape != null) {
             this.landscape.dispose();
         }

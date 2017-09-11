@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.mygdx.game.Chunks;
+import com.mygdx.game.ChunksService;
 import com.mygdx.game.PanoramaSkin;
 import com.mygdx.game.ui.NewPanoramaPane;
 import com.mygdx.game.ui.PopMenu;
@@ -24,7 +24,7 @@ import java.util.Map.Entry;
 
 public class DemoUI extends ApplicationAdapter {
 
-    Chunks chunks;
+    ChunksService chunks;
     Stage uiStage;
     Skin skin;
 

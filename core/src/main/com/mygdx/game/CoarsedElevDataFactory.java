@@ -6,6 +6,7 @@ import com.mygdx.game.model.CoarseElevData;
 import com.mygdx.game.model.ElevData;
 import com.mygdx.game.model.FileBackedElevData;
 import com.mygdx.game.model.LandscapeLoader.ElevDataFactory;
+import java.io.FileNotFoundException;
 
 public class CoarsedElevDataFactory implements ElevDataFactory {
 
@@ -18,7 +19,7 @@ public class CoarsedElevDataFactory implements ElevDataFactory {
     }
 
     @Override
-    public ElevData chunk(String chunkName) {
+    public ElevData chunk(String chunkName) throws FileNotFoundException {
         return new CoarseElevData(new FileBackedElevData(Gdx.files, chunkName), detail,
                                   elevCfg.chunkWidthCells, elevCfg.chunkHeightCells);
     }

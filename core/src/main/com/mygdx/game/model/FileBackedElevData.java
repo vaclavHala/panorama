@@ -1,7 +1,9 @@
 package com.mygdx.game.model;
 
 import com.badlogic.gdx.Files;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,10 +15,18 @@ public class FileBackedElevData implements ElevData {
     private String chunkName;
     private InputStream in;
 
-    public FileBackedElevData(Files files, String chunkName) {
-        this.chunkName = chunkName;
-        this.in = files.internal(chunkName).read(BUFFER_SIZE);
-        this.at = 0;
+    public FileBackedElevData(Files files, String chunkName) throws FileNotFoundException {
+        try {
+            this.chunkName = chunkName;
+            this.in = files.external(chunkName).read(BUFFER_SIZE);
+            this.at = 0;
+        } catch (GdxRuntimeException e) {
+            if (e.getCause() != null && (e.getCause() instanceof FileNotFoundException)) {
+                throw new FileNotFoundException(chunkName);
+            } else {
+                throw e;
+            }
+        }
     }
 
     public FileBackedElevData(InputStream is, String chunkName) {

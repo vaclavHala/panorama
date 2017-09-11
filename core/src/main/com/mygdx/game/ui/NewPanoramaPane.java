@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Align;
 import com.mygdx.game.Conductor;
 import com.mygdx.game.PanoramaPane;
 import com.mygdx.game.Terraformer;
+import com.mygdx.game.Terraformer.MissingChunksException;
 import static com.mygdx.game.common.ExceptionFormatter.formatException;
 import com.mygdx.game.service.DebugFeedService;
 import com.mygdx.game.service.LocationServiceException;
@@ -36,9 +37,8 @@ public class NewPanoramaPane extends ScreenAdapter {
     private final Skin skin;
 
     private final Actor parent;
-    //    private final WidgetGroup entryArea;
 
-    private final PopMenu popLeft;
+    //    private final WidgetGroup entryArea;
 
     public NewPanoramaPane(
             Conductor conductor,
@@ -53,47 +53,38 @@ public class NewPanoramaPane extends ScreenAdapter {
         this.gps = gps;
         //        Gdx.input.setInputProcessor(stage);
 
-        List<Entry<String, Runnable>> buttonsLeft = new ArrayList<Entry<String, Runnable>>();
-        buttonsLeft.add(new AbstractMap.SimpleEntry<String, Runnable>("red", new Runnable() {
-
-            @Override
-            public void run() {
-            }
-        }));
-        buttonsLeft.add(new AbstractMap.SimpleEntry<String, Runnable>("blue", new Runnable() {
-
-            @Override
-            public void run() {
-            }
-        }));
-        popLeft = new PopMenu(skin, PopMenu.MenuSide.LEFT,
-                              uiStage.getWidth(), uiStage.getHeight(),
-                              buttonsLeft);
-        popLeft.actor().setZIndex(10);
-
-        EventListener goListener = new ChangeListener() {
-
-            @Override
-            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                GoParams params = (GoParams) actor.getUserObject();
-                log("GO for lon=%s, lat=%s", params.longitude(), params.latitude());
-                if (params.longitude() != null && params.latitude() != null) {
-                    NewPanoramaPane.this.terraformer.rebuildLandscape(params.longitude(), params.latitude(), null);
-                    // FIXME wait for terraformer to be ready
-                    NewPanoramaPane.this.conductor.screen(PanoramaPane.class);
-                }
-            }
-        };
+        EventListener goListener = new GoListener();
 
         Table root = new Table(skin);
         parent = root;
         root.setFillParent(true);
 
-        root.add(new Table().add(new TextButton("A", skin)).expand().fill().getTable()
+        TextButton btnPanorama = new TextButton("Pano", skin);
+        btnPanorama.setDisabled(!this.terraformer.hasLandscape());
+        btnPanorama.addListener(new ChangeListener() {
+
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                NewPanoramaPane.this.conductor.screen(PanoramaPane.class);
+            }
+        });
+
+        TextButton btnNewPanorama = new TextButton("New", skin);
+        // no listener, we are already on this pane
+        TextButton btnResources = new TextButton("Res", skin);
+        btnResources.addListener(new ChangeListener() {
+
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                NewPanoramaPane.this.conductor.screen(ResourcesPane.class);
+            }
+        });
+
+        root.add(new Table().add(btnPanorama).expand().fill().getTable()
                             .row().getTable()
-                            .add(new TextButton("B", skin)).expand().fill().getTable()
+                            .add(btnNewPanorama).expand().fill().getTable()
                             .row().getTable()
-                            .add(new TextButton("C", skin)).expand().fill().getTable()
+                            .add(btnResources).expand().fill().getTable()
                             .row().getTable()
             ).width(80).expandY().fill();
 
@@ -190,27 +181,12 @@ public class NewPanoramaPane extends ScreenAdapter {
                             .row().getTable()
             ).expand().fill();
 
-        gpsListener = new LocationListener() {
+        gpsListener = new UpdateLocationListener(sensorLat, sensorLon);
 
-            @Override
-            public void update(final float lon, final float lat) {
-                Gdx.app.postRunnable(new Runnable() {
+    }
 
-                    @Override
-                    public void run() {
-                        log("Location update: lon=%s, lat=%s", lon, lat);
-                        sensorLon.setText("" + lon);
-                        sensorLat.setText("" + lat);
-                    }
-                });
-            }
-
-            @Override
-            public void error(LocationServiceException err) {
-                log("Location error: %s", formatException(err));
-            }
-        };
-
+    private Table buildTable() {
+        return null;
     }
 
     private Actor buildManualEntryScreen() {
@@ -294,5 +270,53 @@ public class NewPanoramaPane extends ScreenAdapter {
         public Float longitude();
 
         public Float latitude();
+    }
+
+    private class GoListener extends ChangeListener {
+
+        @Override
+        public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+            GoParams params = (GoParams) actor.getUserObject();
+            log("GO for lon=%s, lat=%s", params.longitude(), params.latitude());
+            if (params.longitude() != null && params.latitude() != null) {
+                try {
+                    NewPanoramaPane.this.terraformer.rebuildLandscape(params.longitude(), params.latitude(), null);
+                    // FIXME wait for terraformer to be ready
+                    NewPanoramaPane.this.conductor.screen(PanoramaPane.class);
+                } catch (MissingChunksException e) {
+                    log("Missing resources: %s", e.missingChunks);
+                    NewPanoramaPane.this.conductor.screen(ResourcesPane.class);
+                }
+            }
+        }
+    };
+
+    private class UpdateLocationListener implements LocationListener {
+
+        private final Label labelLat;
+        private final Label labelLon;
+
+        public UpdateLocationListener(Label labelLat, Label labelLon) {
+            this.labelLat = labelLat;
+            this.labelLon = labelLon;
+        }
+
+        @Override
+        public void update(final float lon, final float lat) {
+            Gdx.app.postRunnable(new Runnable() {
+
+                @Override
+                public void run() {
+                    log("Location update: lon=%s, lat=%s", lon, lat);
+                    labelLon.setText("" + lon);
+                    labelLat.setText("" + lat);
+                }
+            });
+        }
+
+        @Override
+        public void error(LocationServiceException err) {
+            log("Location error: %s", formatException(err));
+        }
     }
 }
