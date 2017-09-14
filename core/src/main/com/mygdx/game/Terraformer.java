@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface Terraformer {
 
-    void rebuildLandscape(float lon, float lat, ProgressListener progress) throws MissingChunksException;
+    void rebuildLandscape(float lon, float lat) throws MissingChunksException;
 
     /** rebuildLandscape() first, when landscape is loaded and this returns true getters here can be used */
     boolean hasLandscape();

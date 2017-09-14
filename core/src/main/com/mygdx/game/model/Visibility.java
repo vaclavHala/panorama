@@ -14,15 +14,21 @@ public class Visibility {
     // assume there is something blocking the view
     private final float epsPercent;
 
+    // avoids unneccessary allocation
+    private final Vector3 intersection;
+    private final Vector3 dir;
+    private final Ray ray;
+
     public Visibility(float[] vertices, short[] triIndices, int vertComponnets) {
         this.vertices = vertices;
         this.triIndices = triIndices;
         this.vertComponnets = vertComponnets;
         this.epsPercent = .01F;
-    }
 
-    public static Vector3 intersection;
-    public static Ray ray;
+        this.intersection = new Vector3();
+        this.dir = new Vector3();
+        this.ray = new Ray();
+    }
 
     /**
      * Given some landscape, this determines if two points can see each other.
@@ -30,15 +36,9 @@ public class Visibility {
      * @return true if there is clean line of sight between the two points.
      */
     public boolean isVisibleFrom(Vector3 from, Vector3 to) {
-        Vector3 dir = to.cpy().sub(from).nor();
+        terrainIntersection(from, to, intersection);
 
-        //        Ray ray = new Ray(from, dir);
-        ray = new Ray(from, dir);
-        //        Vector3 intersection = new Vector3();
-        intersection = new Vector3();
-        boolean hit = Intersector.intersectRayTriangles(ray, this.vertices, this.triIndices, this.vertComponnets, intersection);
-        //        System.out.println("INTER: " + hit + ": " + from + ", " + to + ", " + intersection);
-        if (!hit) {
+        if (intersection == null) {
             return true;
         }
 
@@ -48,4 +48,19 @@ public class Visibility {
         return distFromTo * (1 - epsPercent) < distFromIntersection;
     }
 
+    /**
+     * Given some landscape, point of observer and target point that the observer is looking at
+     * returns point on landscape where the landscape first intersects line of sight between the
+     * two points, or null if no such point exists
+     */
+    public Vector3 terrainIntersection(Vector3 from, Vector3 to, Vector3 intersection) {
+        dir.set(to).sub(from).nor();
+        ray.set(from, dir);
+        boolean hit = Intersector.intersectRayTriangles(ray, this.vertices, this.triIndices, this.vertComponnets, intersection);
+        if (hit) {
+            return intersection;
+        } else {
+            return null;
+        }
+    }
 }

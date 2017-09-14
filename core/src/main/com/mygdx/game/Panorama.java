@@ -1,26 +1,21 @@
 package com.mygdx.game;
 
-import android.util.Log;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
+import com.badlogic.gdx.utils.I18NBundle;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import static com.mygdx.game.MyGdxGame.metersToBanana;
+import static com.mygdx.game.Asserts.onUI;
 import com.mygdx.game.common.CoordTransform;
 import com.mygdx.game.model.*;
 import com.mygdx.game.service.DebugFeedService;
@@ -28,16 +23,16 @@ import com.mygdx.game.service.DebugFeedService.DebugListener;
 import com.mygdx.game.service.LocationServicePush;
 import com.mygdx.game.ui.NewPanoramaPane;
 import com.mygdx.game.ui.ResourcesPane;
-import static java.lang.Thread.currentThread;
 import java.util.ArrayDeque;
 import static java.util.Collections.unmodifiableList;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Panorama extends Game implements Conductor, Terraformer {
+
+    private static final String CHUNKS_DIR = "chunks/";
 
     private final DebugFeedService debug;
     private Deque<String> debugLog;
@@ -49,6 +44,7 @@ public class Panorama extends Game implements Conductor, Terraformer {
     private final LocationServicePush gps;
 
     private Skin skin;
+    private I18NBundle i18n;
     private Stage uiStage;
     private ExecutorService netPool;
 
@@ -78,6 +74,7 @@ public class Panorama extends Game implements Conductor, Terraformer {
         }
         netPool = Executors.newFixedThreadPool(4);
         skin = PanoramaSkin.load();
+        i18n = PanoramaI18n.load();
         uiStage = new Stage(new StretchViewport(800, 800 * Gdx.graphics.getHeight() / Gdx.graphics.getWidth()));
         uiStage.setDebugAll(true);
         chunks = new ChunksService(netPool);
@@ -130,11 +127,12 @@ public class Panorama extends Game implements Conductor, Terraformer {
         }
         Screen newScreen = null;
         if (screen.equals(ResourcesPane.class)) {
-            newScreen = new ResourcesPane(this, this, skin, uiStage, chunks);
+            newScreen = new ResourcesPane(this, this, skin, i18n, uiStage, chunks);
         } else if (screen.equals(NewPanoramaPane.class)) {
             newScreen = new NewPanoramaPane(this, this, gps, skin, uiStage);
         } else if (screen.equals(PanoramaPane.class)) {
-            newScreen = new PanoramaPane(this, this, skin, uiStage);
+            // if model is not loaded yet show LoadingPane instead and wait for loading to finish
+            newScreen = new PanoramaPane(this, this, skin, uiStage, coordTrans);
         } else {
             throw new IllegalArgumentException("Can not transition to screen " + screen);
         }
@@ -153,9 +151,12 @@ public class Panorama extends Game implements Conductor, Terraformer {
     }
 
     @Override
-    public void rebuildLandscape(float lon, float lat, ProgressListener progress) throws MissingChunksException {
+    public void rebuildLandscape(float lon, float lat) throws MissingChunksException {
+        assert onUI();
+
         if (this.landscape != null) {
             this.landscape.dispose();
+            this.landscape = null;
         }
 
         // TODO first check we have all required resources, if not take user to resource screen
@@ -165,10 +166,16 @@ public class Panorama extends Game implements Conductor, Terraformer {
         coordTrans = new CoordTransform(111000F, 111000F, 1F, userPosition);
         //        elevCfg = new ElevConfig(1, 1, 3601 / 10 + 1, 3601 / 10 + 1, 3601 / 10.0F, 3601 / 10.0F);
         elevCfg = new ElevConfig(1, 1, 3601, 3601, 3601, 3601);
-        LandscapeLoader loader = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, 1), elevCfg, coordTrans);
+        LandscapeLoader loader = new LandscapeLoader(elevCfg, coordTrans);
 
         float sizeDeg = 0.05F;
-        ModelData landscapeModelData = loader.loadModelData(userPosition.x - sizeDeg / 2.0F, userPosition.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
+        List<Chunk> requiredChunks = loader.requiredChunks(userPosition.x - sizeDeg / 2.0F, userPosition.y - sizeDeg / 2.0F,
+                                                           sizeDeg, sizeDeg);
+
+        ModelData landscapeModelData = loader.loadModelData(new ZipBackedElevDataFactory(CHUNKS_DIR, elevCfg),
+                                                            //new CoarsedElevDataFactory(elevCfg, 1),
+                                                            userPosition.x - sizeDeg / 2.0F, userPosition.y - sizeDeg / 2.0F,
+                                                            sizeDeg, sizeDeg);
         this.landscape = new Model(landscapeModelData);
 
         ModelMesh landscapeMesh = landscapeModelData.meshes.first();
@@ -180,11 +187,16 @@ public class Panorama extends Game implements Conductor, Terraformer {
         ElevationResolution elevResolution =
                 new ElevationResolution(landscapeMesh.vertices, landscapeTris.indices, landscapeVertComponents, coordTrans);
 
-        this.features = unmodifiableList(createFeatures(elevResolution, userPosition, sizeDeg));
+        this.features = unmodifiableList(createFeatures(elevResolution, userPosition, sizeDeg, requiredChunks));
     }
 
-    private List<Feature> createFeatures(ElevationResolution elevResolution, Vector3 userPosition, float sizeDeg) {
-        FeatureLookup featureLookup = new FileBackedFeatureLookup(Gdx.files, elevResolution);
+    private List<Feature> createFeatures(
+            ElevationResolution elevResolution,
+            Vector3 userPosition,
+            float sizeDeg,
+            List<Chunk> requiredChunks) {
+        FeatureLookup featureLookup = new ZipFeatureLookupFactory(CHUNKS_DIR).lookupFrom(requiredChunks, elevResolution);
+        // new FileBackedFeatureLookup(Gdx.files, elevResolution);
         // put enough margin around edges to avoid features not above landscape
         return featureLookup.lookup(userPosition.x - sizeDeg / 2.0F + 0.0005F, userPosition.y - sizeDeg / 2.0F + 0.0005F,
                                     sizeDeg - 0.001F, sizeDeg - 0.001F);

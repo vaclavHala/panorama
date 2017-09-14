@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.I18NBundle;
 import com.mygdx.game.*;
 import static com.mygdx.game.Asserts.onUI;
 import com.mygdx.game.ChunksService.ChunkEvent;
@@ -28,7 +29,6 @@ import java.util.Map.Entry;
  */
 public class ResourcesPane extends ScreenAdapter implements ChunksServiceListener {
 
-    private static final float MILLIS_PER_UNIT = 5;
     private static final Comparator<Actor> COMPARATOR = new RowsComparator();
 
     private final Conductor conductor;
@@ -36,44 +36,20 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
     private final Stage uiStage;
     private final ChunksService chunks;
     private final Skin skin;
+    private final I18NBundle i18n;
     private final Actor parent;
     private final VerticalGroup chunkContainer;
     private final Map<Actor, Container<?>> rowToContainer;
 
-    int x = 1;
-
-    private InputProcessor debugInput = new InputAdapter() {
-
-        @Override
-        public boolean keyDown(int keycode) {
-
-            if (keycode == Input.Keys.E) {
-                addRow(new RowOwned(skin, new Chunk(1, x++)));
-            } else if (keycode == Input.Keys.W) {
-                addRow(new RowAvailable(skin, new Chunk(1, x++)));
-            } else if (keycode == Input.Keys.R) {
-                addRow(new RowDownloading(skin, new Chunk(1, x++), 0));
-            } else if (keycode == Input.Keys.D) {
-                Actor row = rowFor(new Chunk(1, --x));
-                removeRow(row);
-            }
-
-            sortChildren();
-
-            return false;
-        }
-        //
-    };
-
     public ResourcesPane(
-            Conductor conductor,
-            Terraformer terraformer,
-            Skin skin, Stage uiStage,
+            Conductor conductor, Terraformer terraformer,
+            Skin skin, I18NBundle i18n, Stage uiStage,
             ChunksService chunks) {
         this.conductor = conductor;
         this.terraformer = terraformer;
         this.chunks = chunks;
         this.skin = skin;
+        this.i18n = i18n;
         this.uiStage = uiStage;
 
         this.rowToContainer = new HashMap<Actor, Container<?>>();
@@ -122,16 +98,14 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
 
     @Override
     public void show() {
-        assert onUI();
-
         for (Chunk chunk : this.chunks.ownedChunks()) {
-            this.addRow(new RowOwned(skin, chunk));
+            this.addRow(new RowOwned(chunk));
         }
         for (Chunk chunk : this.chunks.availableChunks()) {
-            this.addRow(new RowAvailable(skin, chunk));
+            this.addRow(new RowAvailable(chunk));
         }
         for (Entry<Chunk, Integer> chunkWithProgress : this.chunks.downloadingChunks()) {
-            this.addRow(new RowDownloading(skin, chunkWithProgress.getKey(), chunkWithProgress.getValue()));
+            this.addRow(new RowDownloading(chunkWithProgress.getKey(), chunkWithProgress.getValue()));
         }
         if (this.chunks.availableChunksFetchInProgress()) {
             this.addRow(new RowFetchInProgress(skin));
@@ -141,7 +115,7 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
         uiStage.addActor(parent);
         chunks.addListener(this);
 
-        Gdx.input.setInputProcessor(new InputMultiplexer(debugInput, uiStage));
+        Gdx.input.setInputProcessor(uiStage);
     }
 
     @Override
@@ -163,20 +137,17 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
                 ChunkState state = eUpdate.state;
                 this.removeRow(rowFor(chunk));
                 if (state.equals(ChunkState.OWNED)) {
-                    this.addRow(new RowOwned(skin, chunk));
+                    this.addRow(new RowOwned(chunk));
                 } else if (state.equals(ChunkState.DOWNLOADING)) {
-                    this.addRow(new RowDownloading(skin, chunk, 0));
+                    this.addRow(new RowDownloading(chunk, 0));
                 } else if (state.equals(ChunkState.AVAILABLE)) {
-                    this.addRow(new RowAvailable(skin, chunk));
+                    this.addRow(new RowAvailable(chunk));
                 } else {
                     throw new AssertionError(state);
                 }
             } else if (e instanceof ChunkEventDownloadProgress) {
                 ChunkEventDownloadProgress eDown = (ChunkEventDownloadProgress) e;
                 RowDownloading row = (RowDownloading) this.rowFor(eDown.chunk);
-                float progressDiff = eDown.percentDone - row.progress.getValue();
-                float animTime = progressDiff * MILLIS_PER_UNIT;
-                row.progress.setAnimateDuration(animTime);
                 row.progress.setValue(eDown.percentDone);
             } else if (e instanceof ChunkEventMetadataFetch) {
                 ChunkEventMetadataFetch eMeta = (ChunkEventMetadataFetch) e;
@@ -249,81 +220,6 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
         this.chunkContainer.getChildren().sort(COMPARATOR);
     }
 
-    //    private void update() {
-    //        List<Chunk> newChunks = chunks.chunkList();
-    //        if (!shouldUpdate(newChunks)) {
-    //            return;
-    //        }
-    //        log("Rebuilding chunk table");
-    //        this.currentChunks.clear();
-    //        container.clear();
-    //        this.currentChunks.addAll(newChunks);
-    //
-    //        for (final Chunk chunk : this.currentChunks) {
-    //            ProgressBar bar = null;
-    //            ImageButton button = null;
-    //            String description = null;
-    //            if (chunk instanceof ChunksService.OwnedChunk) {
-    //                bar = new ProgressBar(0, 100, 1, false, skin);
-    //                bar.setValue(100);
-    //                button = new ImageButton(skin);
-    //                description = format("Latitude: %s°..%s°, Longitude: %s°..%s° (Downloaded)",
-    //                                     chunk.lat, chunk.lat + 1,
-    //                                     chunk.lon, chunk.lon + 1);
-    //            } else if (chunk instanceof ChunksService.AvailableChunk) {
-    //                bar = new ProgressBar(0, 100, 1, false, skin);
-    //                bar.setValue(0);
-    //                button = new ImageButton(skin);
-    //                description = format("Latitude: %s°..%s°, Longitude: %s°..%s° (Available)",
-    //                                     chunk.lat, chunk.lat + 1,
-    //                                     chunk.lon, chunk.lon + 1);
-    //            } else if (chunk instanceof ChunksService.ObtainingChunk) {
-    //                int downloadedPercent = ((ChunksService.ObtainingChunk) chunk).progressPercent;
-    //                bar = new ProgressBar(0, 100, 1, false, skin);
-    //                bar.setValue(downloadedPercent);
-    //                button = new ImageButton(skin);
-    //                description = format("Latitude: %s°..%s°, Longitude: %s°..%s° (Downloading: %s %%)",
-    //                                     chunk.lat, chunk.lat + 1,
-    //                                     chunk.lon, chunk.lon + 1,
-    //                                     downloadedPercent);
-    //            } else {
-    //                throw new IllegalArgumentException("Unexpected chunk: " + chunk);
-    //            }
-    //            button.addListener(new ChangeListener() {
-    //
-    //                @Override
-    //                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-    //                    chunks.downloadChunk(chunk.lon, chunk.lat);
-    //                    ResourcesPane.this.update();
-    //                }
-    //            });
-    //            Label label = new Label(description, skin);
-    //            bar.setHeight(100);
-    //            container.add(button).size(50, 50);
-    //            container.row();
-    //        }
-    //
-    //        if (chunks.availableChunksFetchInProgress()) {
-    //            container.add(new Label("Loading list of available chunks", skin)).height(50);
-    //            container.row();
-    //        }
-    //
-    //    }
-
-    //    private boolean shouldUpdate(List<Chunk> newChunks) {
-    //        if (this.container.getRows() != newChunks.size()) {
-    //            return true;
-    //        }
-    //        Iterator<Chunk> i = this.currentChunks.iterator();
-    //        for (Chunk newChunk : newChunks) {
-    //            Chunk oldChunk = i.next();
-    //            if (!oldChunk.equals(newChunk)) {
-    //                return true;
-    //            }
-    //        }
-    //        return false;
-    //    }
-
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -333,7 +229,7 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
     }
 
     private static void log(String message, Object... args) {
-        Gdx.app.log("ResourcesPane", String.format(message, args));
+        Gdx.app.log("pano.pane.res", String.format(message, args));
     }
 
     private static class RowForChunk extends Table {
@@ -348,10 +244,10 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
 
     private class RowOwned extends RowForChunk {
 
-        public RowOwned(Skin skin, Chunk chunk) {
+        public RowOwned(Chunk chunk) {
             super(chunk, skin);
-            Label lbl = new Label("Owned " + chunk.name, skin);
-            TextButton btnDelete = new TextButton("Delete", skin);
+            Label lbl = new Label(i18n.format("pane.res.row.owned", chunk.name), skin);
+            TextButton btnDelete = new TextButton(i18n.format("pane.res.row.btn.delete"), skin);
             btnDelete.addListener(new ChangeListener() {
 
                 @Override
@@ -369,12 +265,12 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
 
         private final ProgressBar progress;
 
-        public RowDownloading(Skin skin, Chunk chunk, int percentDone) {
+        public RowDownloading(Chunk chunk, int percentDone) {
             super(chunk, skin);
             this.progress = new ProgressBar(0, 100, 1, false, skin);
             this.progress.setValue(percentDone);
-            Label lbl = new Label("Downloading " + chunk.name, skin);
-            TextButton btnCancel = new TextButton("Cancel", skin);
+            Label lbl = new Label(i18n.format("pane.res.row.downloading", chunk.name), skin);
+            TextButton btnCancel = new TextButton(i18n.format("pane.res.row.btn.cancel"), skin);
             btnCancel.addListener(new ChangeListener() {
 
                 @Override
@@ -390,10 +286,10 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
 
     private class RowAvailable extends RowForChunk {
 
-        public RowAvailable(Skin skin, Chunk chunk) {
+        public RowAvailable(Chunk chunk) {
             super(chunk, skin);
-            Label lbl = new Label("Available " + chunk.name, skin);
-            TextButton btnDownload = new TextButton("Download", skin);
+            Label lbl = new Label(i18n.format("pane.res.row.available", chunk.name), skin);
+            TextButton btnDownload = new TextButton(i18n.format("pane.res.row.btn.download"), skin);
             btnDownload.addListener(new ChangeListener() {
 
                 @Override
@@ -407,10 +303,10 @@ public class ResourcesPane extends ScreenAdapter implements ChunksServiceListene
         }
     }
 
-    private static class RowFetchInProgress extends Table {
+    private class RowFetchInProgress extends Table {
 
         public RowFetchInProgress(Skin skin) {
-            Label lbl = new Label("Downloading available chunks list...", skin);
+            Label lbl = new Label(i18n.format("pane.res.row.meta"), skin);
 
             this.add(lbl).height(100).expandX().fill();
         }

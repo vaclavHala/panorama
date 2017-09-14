@@ -18,8 +18,9 @@ public class FeaturesDisplay {
 
     private final Stage stage;
 
-    public FeaturesDisplay(List<Feature> features,
-            TextureAtlas atlas, Skin skin, Camera cam,
+    public FeaturesDisplay(
+            List<Feature> features,
+            Skin skin, Camera cam,
             CoordTransform coordTrans, Visibility visibility) {
 
         this.stage = new Stage(new StretchViewport(1024, 480));
@@ -28,7 +29,7 @@ public class FeaturesDisplay {
             System.out.println("Feature: " + feature);
             Vector3 featureWorldPosition = coordTrans.toInternal(feature.position.cpy().add(0, 0, 20), new Vector3());
             IsVisible isVisible = new IsVisible(visibility, cam, featureWorldPosition);
-            Actor featureLabel = new FeatureLabel(feature.name, featureWorldPosition, atlas, skin, projection, isVisible);
+            Actor featureLabel = new FeatureLabel(feature.name, featureWorldPosition, skin, projection, isVisible);
             this.stage.addActor(featureLabel);
         }
     }

@@ -93,13 +93,13 @@ public class NewPanoramaPane extends ScreenAdapter {
         manualLblLat.setAlignment(Align.right);
         Label manualLblLon = new Label("Longitude:", skin);
         manualLblLon.setAlignment(Align.right);
-        final TextArea manualLon = new TextArea("", skin);
-        final TextArea manualLat = new TextArea("", skin);
-        manualEntryPane.add(new Table(skin).add(manualLblLon).fill().pad(10).getTable()
-                                           .add(manualLon).expand().fill().pad(10).getTable()
-                                           .row().getTable()
-                                           .add(manualLblLat).fill().pad(10).getTable()
+        final TextArea manualLon = new TextArea("14.5", skin);
+        final TextArea manualLat = new TextArea("48.5", skin);
+        manualEntryPane.add(new Table(skin).add(manualLblLat).fill().pad(10).getTable()
                                            .add(manualLat).expand().fill().pad(10).getTable()
+                                           .row().getTable()
+                                           .add(manualLblLon).fill().pad(10).getTable()
+                                           .add(manualLon).expand().fill().pad(10).getTable()
                        ).expandX().fill();
         TextButton manualBtnGo = new TextButton("GO", skin);
         manualBtnGo.setUserObject(new GoParams() {
@@ -132,11 +132,12 @@ public class NewPanoramaPane extends ScreenAdapter {
         sensorLblLon.setAlignment(Align.right);
         final Label sensorLon = new Label("", skin);
         final Label sensorLat = new Label("", skin);
-        sensorEntryPane.add(new Table(skin).add(sensorLblLon).fill().pad(10).getTable()
-                                           .add(sensorLon).expand().fill().pad(10).getTable()
-                                           .row().getTable()
-                                           .add(sensorLblLat).fill().pad(10).getTable()
+        sensorEntryPane.add(new Table(skin).add(sensorLblLat).fill().pad(10).getTable()
                                            .add(sensorLat).expand().fill().pad(10).getTable()
+                                           .row().getTable()
+                                           .add(sensorLblLon).fill().pad(10).getTable()
+                                           .add(sensorLon).expand().fill().pad(10).getTable()
+
                        ).expandX().fill();
         TextButton sensorBtnGo = new TextButton("GO", skin);
         sensorBtnGo.setUserObject(new GoParams() {
@@ -267,9 +268,9 @@ public class NewPanoramaPane extends ScreenAdapter {
 
     private static interface GoParams {
 
-        public Float longitude();
-
         public Float latitude();
+
+        public Float longitude();
     }
 
     private class GoListener extends ChangeListener {
@@ -280,7 +281,7 @@ public class NewPanoramaPane extends ScreenAdapter {
             log("GO for lon=%s, lat=%s", params.longitude(), params.latitude());
             if (params.longitude() != null && params.latitude() != null) {
                 try {
-                    NewPanoramaPane.this.terraformer.rebuildLandscape(params.longitude(), params.latitude(), null);
+                    NewPanoramaPane.this.terraformer.rebuildLandscape(params.latitude(), params.longitude());
                     // FIXME wait for terraformer to be ready
                     NewPanoramaPane.this.conductor.screen(PanoramaPane.class);
                 } catch (MissingChunksException e) {

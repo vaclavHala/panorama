@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
+import com.mygdx.game.model.Chunk;
 import com.mygdx.game.model.CoarseElevData;
 import com.mygdx.game.model.ElevData;
 import com.mygdx.game.model.FileBackedElevData;
@@ -19,8 +20,8 @@ public class CoarsedElevDataFactory implements ElevDataFactory {
     }
 
     @Override
-    public ElevData chunk(String chunkName) throws FileNotFoundException {
-        return new CoarseElevData(new FileBackedElevData(Gdx.files, chunkName), detail,
+    public ElevData chunk(Chunk chunk) throws FileNotFoundException {
+        return new CoarseElevData(new FileBackedElevData(Gdx.files, chunk.name), detail,
                                   elevCfg.chunkWidthCells, elevCfg.chunkHeightCells);
     }
 }

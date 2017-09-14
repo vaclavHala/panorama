@@ -14,6 +14,7 @@ import com.mygdx.game.ElevConfig;
 import com.mygdx.game.Terraformer.MissingChunksException;
 import com.mygdx.game.common.CoordTransform;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import static java.lang.String.format;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,17 +33,16 @@ public class LandscapeLoader {
     private static final String NODE_CHILD_ID = "node_child";
     private static final String PART_ID = "part";
 
-    private final ElevDataFactory factory;
     private final ElevConfig elevCfg;
     private final CoordTransform coordTrans;
 
-    public LandscapeLoader(ElevDataFactory factory, ElevConfig elevCfg, CoordTransform coordTrans) {
-        this.factory = factory;
+    public LandscapeLoader(ElevConfig elevCfg, CoordTransform coordTrans) {
         this.elevCfg = elevCfg;
         this.coordTrans = coordTrans;
     }
 
     public ModelData loadModelData(
+            ElevDataFactory factory,
             float lon, float lat,
             float width, float height) throws MissingChunksException {
         Gdx.app.log(TAG, "Loading landscape. Deg:" +
@@ -55,7 +55,7 @@ public class LandscapeLoader {
         model.id = MODEL_ID;
 
         //            colorize(landscape, (float) lon, (float) lat, elevCfg);
-        addMesh(model, lon, lat, width, height);
+        addMesh(factory, model, lon, lat, width, height);
         addMaterial(model);
         addNode(model);
 
@@ -63,7 +63,8 @@ public class LandscapeLoader {
 
     }
 
-    private void addMesh(ModelData model,
+    private void addMesh(
+            ElevDataFactory factory, ModelData model,
             float lonFrom, float latFrom,
             float width, float height) throws MissingChunksException {
 
@@ -138,10 +139,10 @@ public class LandscapeLoader {
                 Gdx.app.log(TAG, "[r" + row + ",c" + col + "] Opening chunk " + chunk);
                 try {
 
-                    chunks[i] = this.factory.chunk("chunks/" + chunk.name);
+                    chunks[i] = factory.chunk(chunk);
                     //                        new CoarseElevData(new FileBackedElevData(this.files, ),
                     //                                               detail, 3601, 3601);
-                } catch (FileNotFoundException ex) {
+                } catch (IOException ex) {
                     missingChunks.add(chunk);
                 }
             }
@@ -206,6 +207,44 @@ public class LandscapeLoader {
         model.meshes.add(mesh);
     }
 
+    // make loader statefull, calculate all the things into member vars, then use those in load and also use them here
+
+    public List<Chunk> requiredChunks(
+            float lonFrom, float latFrom,
+            float width, float height) {
+        float lonTo = lonFrom + width;
+        float latTo = latFrom + height;
+        // to avoid negative numbers shift by 180 degrees, will be subtracted on output
+        // in particular we always want to find boundary lower than given exact value in degrees
+        // if there were negative numbers this would not work properly
+        float normLonFrom = lonFrom + 180;
+        float normLatFrom = latFrom + 180;
+        float normLonTo = lonTo + 180;
+        float normLatTo = latTo + 180;
+
+        //truncates to left/bottom most chunk boundary
+        int chunk0Lon = (int) (normLonFrom / elevCfg.chunkWidthDeg) * elevCfg.chunkWidthDeg - 180;
+        int chunk0Lat = (int) (normLatFrom / elevCfg.chunkHeightDeg) * elevCfg.chunkHeightDeg - 180;
+
+        int chunkNLon = (int) (normLonTo / elevCfg.chunkWidthDeg) * elevCfg.chunkWidthDeg - 180;
+        int chunkNLat = (int) (normLatTo / elevCfg.chunkHeightDeg) * elevCfg.chunkHeightDeg - 180;
+
+        int chunksHorizontal = (chunkNLon - chunk0Lon) / elevCfg.chunkWidthDeg + 1;
+        int chunksVertical = (chunkNLat - chunk0Lat) / elevCfg.chunkHeightDeg + 1;
+
+        List<Chunk> requiredChunks = new ArrayList<Chunk>();
+        for (int row = 0; row < chunksVertical; row++) {
+            for (int col = 0; col < chunksHorizontal; col++) {
+                int i = row * chunksHorizontal + col;
+                int chunkLon = chunk0Lon + col * elevCfg.chunkWidthDeg;
+                int chunkLat = chunk0Lat + row * elevCfg.chunkHeightDeg;
+                requiredChunks.add(new Chunk(chunkLat, chunkLon));
+
+            }
+        }
+        return requiredChunks;
+    }
+
     private void colorize(float[] vertices, int vertCount,
             int vComponents, int elevIndex, int colorIndex) {
         float minElev = Float.MAX_VALUE;
@@ -255,9 +294,13 @@ public class LandscapeLoader {
         Gdx.app.log(TAG, String.format(format, args));
     }
 
+    /**
+     * Client first obtains list of chunks which will be required to load landscape at given coordinates.
+     * Then, for these chunks, factory is created which contains prepared (unzipped etc.) files for these chunks.
+     */
     public interface ElevDataFactory {
 
-        ElevData chunk(String chunkName) throws FileNotFoundException;
+        ElevData chunk(Chunk chunk) throws IOException;
     }
 
 }

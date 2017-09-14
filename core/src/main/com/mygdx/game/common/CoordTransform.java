@@ -2,6 +2,12 @@ package com.mygdx.game.common;
 
 import com.badlogic.gdx.math.Vector3;
 
+/**
+ * External:
+ * [longitude(deg), latitude(deg), elevation(meters above sea level)]
+ * Internal:
+ * Units for 3d model sizes
+ */
 public class CoordTransform {
 
     private final float offsetLon;

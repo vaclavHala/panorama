@@ -111,12 +111,12 @@ public class MyGdxGame extends ApplicationAdapter {
         coordTrans = new CoordTransform(metersToBanana(111000F), metersToBanana(111000F), metersToBanana(1F), meReal);
         log("COORD transform: " + coordTrans);
 
-        LandscapeLoader loader1 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, 1), elevCfg1, coordTrans);
-        LandscapeLoader loader10 = new LandscapeLoader(new CoarsedElevDataFactory(elevCfg, 10), elevCfg10, coordTrans);
+        LandscapeLoader loader1 = new LandscapeLoader(elevCfg1, coordTrans);
+        LandscapeLoader loader10 = new LandscapeLoader(elevCfg10, coordTrans);
 
         float sizeDeg = 0.05F;
-        ModelData landscapeModelData1 = null; // loader1.loadModelData(meReal.x - sizeDeg / 2.0F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
-        ModelData landscapeModelData10 = null; //  loader10.loadModelData(meReal.x - sizeDeg / 2.0F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
+        ModelData landscapeModelData1 = null; // loader1.loadModelData(new CoarsedElevDataFactory(elevCfg, 1),meReal.x - sizeDeg / 2.0F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
+        ModelData landscapeModelData10 = null; //  loader10.loadModelData(new CoarsedElevDataFactory(elevCfg, 10), meReal.x - sizeDeg / 2.0F, meReal.y - sizeDeg / 2.0F, sizeDeg, sizeDeg);
 
         ModelMesh landscapeMesh = landscapeModelData1.meshes.first();
         ModelMeshPart landscapeTris = landscapeMesh.parts[0];
@@ -256,7 +256,7 @@ public class MyGdxGame extends ApplicationAdapter {
         //        NinePatch patch = atlas.createPatch("patchimagename");
 
         featuresDisplay = new FeaturesDisplay(features,
-                                              featuresAtlas, skin, cam,
+                                              skin, cam,
                                               coordTrans, visibility);
         //        photoDisplay = new PhotoDisplay(camService.cameraView());
 

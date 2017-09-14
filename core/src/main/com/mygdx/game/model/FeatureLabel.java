@@ -13,9 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class FeatureLabel extends Actor {
 
-    private static final String TAG = "FEATURE";
-
-    private final NinePatch patch;
+    //    private final NinePatch patch;
     private final BitmapFont font;
     private final WorldToScreenProjection projection;
     private final IsVisible visibility;
@@ -26,11 +24,11 @@ public class FeatureLabel extends Actor {
     public FeatureLabel(
             String featureName,
             Vector3 featureWorldPosition,
-            TextureAtlas atlat, Skin skin,
+            Skin skin,
             WorldToScreenProjection projection,
             IsVisible isVisible) {
-        this.patch = atlat.createPatch("label_leg.dark");
-        this.font = skin.getFont("font");
+        //        this.patch = atlat.createPatch("label_leg.dark");
+        this.font = skin.getFont("default-font");
         this.featureWorldPosition = featureWorldPosition;
         this.projection = projection;
         this.visibility = isVisible;

@@ -8,26 +8,26 @@ public class ChunkBuilder {
 
     public static void main(String[] args) throws IOException {
 
-        String usage = "Usage: java ChunkBuilder LON LAT; format e12, n48 etc.";
+        String usage = "Usage: java ChunkBuilder LAT LON; format n48, e12 etc.";
 
         if (args.length != 2) {
-            System.out.println(usage);
+            System.out.println("Want 2 args, got "+args.length+"\n"+usage);
             System.exit(1);
         }
 
-        String lon = args[0];
-        String lat = args[1];
+        String lat = args[0];
+        String lon = args[1];
 
-        if (!lon.matches("[ns]\\d+") || !lat.matches("[we]\\d+")) {
-            System.out.println(usage);
+        if (!lat.matches("[ns]\\d+") || !lon.matches("[we]\\d+")) {
+            System.out.println("Invalid format\n"+usage);
             System.exit(1);
         }
 
-        String bilIn = "/home/hala/Documents/toy/panorama/data/1arc/" + lon + "_" + lat + "_1arc_v3.bil";
-        String featuresIn = "/home/hala/Documents/toy/panorama/data/features/peak_" + lon + "_" + lat + ".csv";
+        String bilIn = "/home/hala/Documents/toy/panorama/data/1arc/" + lat + "_" + lon + "_1arc_v3.bil";
+        String featuresIn = "/home/hala/Documents/toy/panorama/data/features/peak_" + lat + "_" + lon + ".csv";
 
-        Path tempElev = Files.createTempFile("chunk_" + lon + "_" + lat, ".elev");
-        File chunkZip = new File("/home/hala/Documents/toy/panorama/data/chunks/" + lon + "_" + lat + ".chunk");
+        Path tempElev = Files.createTempFile("chunk_" + lat + "_" + lon, ".elev");
+        File chunkZip = new File("/home/hala/Documents/toy/panorama/data/chunks/chunk_" + lat + "_" + lon);
 
         System.out.println("elev from " + bilIn + " via " + tempElev.toAbsolutePath().toString());
         System.out.println("features from " + featuresIn);
@@ -37,13 +37,15 @@ public class ChunkBuilder {
 
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(chunkZip));
 
-        out.putNextEntry(new ZipEntry("elev"));
-        transferContents(tempElev.toAbsolutePath().toString(), out);
-        out.closeEntry();
+        // files need to be in some directory inside the ZIP, otherwise there are problems reading it back
 
-        out.putNextEntry(new ZipEntry("features"));
+        out.putNextEntry(new ZipEntry("chunk/elev"));
+        transferContents(tempElev.toAbsolutePath().toString(), out);
+        // out.closeEntry();
+
+        out.putNextEntry(new ZipEntry("chunk/features"));
         transferContents(featuresIn, out);
-        out.closeEntry();
+        // out.closeEntry();
 
         out.close();
 

@@ -12,8 +12,6 @@ import java.util.List;
 
 public class FileBackedFeatureLookup implements FeatureLookup {
 
-    private static final String TAG = FeatureLookup.class.getSimpleName();
-
     private static final int BUFFER_SIZE = 4096;
 
     private final Files files;
@@ -69,7 +67,7 @@ public class FileBackedFeatureLookup implements FeatureLookup {
     }
 
     private static void log(String format, Object... args) {
-        Gdx.app.log(TAG, String.format(format, args));
+        Gdx.app.log("pano.features.file", String.format(format, args));
     }
 
 }
